@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RTSPlayerController.h"
+#include "RTSHud.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -10,7 +11,7 @@ ARTSPlayerController::ARTSPlayerController()
 
 void ARTSPlayerController::BeginPlay()
 {
-
+	HUDPtr = Cast<ARTSHud>(GetHUD());
 }
 
 void ARTSPlayerController::SetupInputComponent()
@@ -26,11 +27,14 @@ void ARTSPlayerController::SetupInputComponent()
 void ARTSPlayerController::Select()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Selecting"));
+	HUDPtr->InitialPoint = HUDPtr->GetMousePosition2D();
+	HUDPtr->bStartSelecting = true;
 }
 
 void ARTSPlayerController::FinishSelecting()
 {
 	UE_LOG(LogTemp, Warning, TEXT("FinishSelecting"));
+	HUDPtr->bStartSelecting = false;
 }
 
 void ARTSPlayerController::Move()

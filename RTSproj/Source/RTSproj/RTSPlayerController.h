@@ -21,6 +21,8 @@ public:
 
 	void SetupInputComponent() override;
 
+	class ARTSHud* HUDPtr;
+
 protected:
 	void Select();
 
