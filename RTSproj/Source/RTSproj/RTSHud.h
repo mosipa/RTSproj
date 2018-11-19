@@ -24,4 +24,6 @@ public:
 	virtual void DrawHUD() override;
 
 	bool bStartSelecting = false;
+
+	TArray<class ARTSprojCharacter*> SelectedActors;
 };

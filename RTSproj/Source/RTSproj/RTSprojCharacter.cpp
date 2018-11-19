@@ -51,6 +51,7 @@ ARTSprojCharacter::ARTSprojCharacter()
 	}
 	CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
 	CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
+	CursorToWorld->SetVisibility(false);
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
@@ -87,4 +88,14 @@ void ARTSprojCharacter::Tick(float DeltaSeconds)
 			CursorToWorld->SetWorldRotation(CursorR);
 		}
 	}
+}
+
+void ARTSprojCharacter::Select()
+{
+	CursorToWorld->SetVisibility(true);
+}
+
+void ARTSprojCharacter::Unselect()
+{
+	CursorToWorld->SetVisibility(false);
 }
