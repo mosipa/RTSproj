@@ -14,7 +14,17 @@ class RTSPROJ_API ARTSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
-	
-	
-	
+public:
+	ARTSPlayerController();
+
+	virtual void BeginPlay() override;
+
+	void SetupInputComponent() override;
+
+protected:
+	void Select();
+
+	void FinishSelecting();
+
+	void Move();
 };
