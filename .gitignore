@@ -75,3 +75,7 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+RTSproj/Intermediate/
+RTSproj/Content/StarterContent/
+RTSproj/Binaries/
+RTSproj/Saved/
