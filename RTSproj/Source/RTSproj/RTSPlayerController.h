@@ -29,4 +29,6 @@ protected:
 	void FinishSelecting();
 
 	void Move();
+
+	void Knife();
 };

@@ -24,6 +24,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
+	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 }
 
 void ARTSPlayerController::Select()
@@ -56,6 +57,26 @@ void ARTSPlayerController::Move()
 		for (auto Actor : SelectedActors)
 		{
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), MoveTo);		
+		}
+	}
+}
+
+void ARTSPlayerController::Knife()
+{
+	if (!HUDPtr) { return; }
+
+	if (HUDPtr->GetSelectedActors().Num() > 0)
+	{
+		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+
+		FHitResult Hit;
+		
+		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
+		{
+			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Knife"));
+			}
 		}
 	}
 }
