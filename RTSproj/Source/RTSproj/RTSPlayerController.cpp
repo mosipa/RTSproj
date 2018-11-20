@@ -75,7 +75,19 @@ void ARTSPlayerController::Knife()
 		{
 			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Knife"));
+				for (auto Actor : SelectedActors)
+				{
+					if (Actor->GetName().Equals(Hit.GetActor()->GetName()))
+					{
+						continue; //TODO decide if we want to have friendly fire (if not put break)
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Knife"));
+						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Hit.GetActor());
+						//TODO knifing target logic
+					}
+				}
 			}
 		}
 	}
