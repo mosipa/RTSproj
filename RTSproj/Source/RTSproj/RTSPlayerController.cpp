@@ -2,6 +2,8 @@
 
 #include "RTSPlayerController.h"
 #include "RTSHud.h"
+#include "RTSprojCharacter.h"
+#include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -26,6 +28,7 @@ void ARTSPlayerController::SetupInputComponent()
 
 void ARTSPlayerController::Select()
 {
+	if (!HUDPtr) { return; }
 	UE_LOG(LogTemp, Warning, TEXT("Selecting"));
 	HUDPtr->InitialPoint = HUDPtr->GetMousePosition2D();
 	HUDPtr->bStartSelecting = true;
@@ -33,11 +36,26 @@ void ARTSPlayerController::Select()
 
 void ARTSPlayerController::FinishSelecting()
 {
+	if (!HUDPtr) { return; }
 	UE_LOG(LogTemp, Warning, TEXT("FinishSelecting"));
 	HUDPtr->bStartSelecting = false;
 }
 
 void ARTSPlayerController::Move()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Moving"));
+	if (!HUDPtr) { return; }
+	if (HUDPtr->GetSelectedActors().Num() > 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Moving"));
+		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+
+		FHitResult Hit;
+		GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
+		FVector MoveTo = Hit.Location;
+
+		for (auto Actor : SelectedActors)
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), MoveTo);		
+		}
+	}
 }
