@@ -25,7 +25,6 @@ public:
 	FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
 
 	void Select();
-
 	void Unselect();
 
 private:
@@ -40,5 +39,9 @@ private:
 	/** A decal that projects to the cursor location. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent* CursorToWorld;
+
+	float Health;
+
+	FORCEINLINE float GetHealth() const { return Health; }
 };
 

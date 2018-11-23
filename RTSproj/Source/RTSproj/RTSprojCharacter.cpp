@@ -56,6 +56,8 @@ ARTSprojCharacter::ARTSprojCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	Health = 100.f;
 }
 
 void ARTSprojCharacter::Tick(float DeltaSeconds)

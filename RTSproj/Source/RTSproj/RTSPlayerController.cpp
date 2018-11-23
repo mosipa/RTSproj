@@ -85,7 +85,18 @@ void ARTSPlayerController::Knife()
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Knife"));
 						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Hit.GetActor());
+						
 						//TODO knifing target logic
+						float DotProd = Hit.GetActor()->GetDotProductTo(Actor);
+						 
+						if (DotProd <= 0)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Backstab"));
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Frontstab"));
+						}
 					}
 				}
 			}
