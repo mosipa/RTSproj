@@ -4,6 +4,8 @@
 #include "RTSHud.h"
 #include "RTSprojCharacter.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/DamageType.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -83,19 +85,39 @@ void ARTSPlayerController::Knife()
 					}
 					else
 					{
+						float Damage;
+
 						UE_LOG(LogTemp, Warning, TEXT("Knife"));
 						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Hit.GetActor());
 						
 						//TODO knifing target logic
 						float DotProd = Hit.GetActor()->GetDotProductTo(Actor);
-						 
+						
 						if (DotProd <= 0)
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Backstab"));
+							Damage = 100.f;
 						}
 						else
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Frontstab"));
+							Damage = 50.f;
+						}
+
+						FVector VectorLength = Hit.GetActor()->GetActorLocation() - Actor->GetActorLocation();
+						float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
+						
+						if (Distance < 100.f)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Deal dmg"));
+
+							UGameplayStatics::ApplyDamage(
+								Hit.GetActor(),
+								Damage,
+								this,
+								Actor,
+								UDamageType::StaticClass()
+							);
 						}
 					}
 				}

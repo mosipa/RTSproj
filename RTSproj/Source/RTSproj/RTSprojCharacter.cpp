@@ -101,3 +101,16 @@ void ARTSprojCharacter::Unselect()
 {
 	CursorToWorld->SetVisibility(false);
 }
+
+float ARTSprojCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Character: %s got hit and lose %f"), *(this->GetName()), DamageAmount);
+
+	SubtractHealth(DamageAmount);
+	if (GetHealth() == 0.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Character died"));
+	}
+
+	return DamageAmount;
+}

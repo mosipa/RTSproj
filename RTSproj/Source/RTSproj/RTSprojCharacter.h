@@ -27,6 +27,12 @@ public:
 	void Select();
 	void Unselect();
 
+	float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser);
+
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE void AddHealth(float Val) { Health += Val; }
+	FORCEINLINE void SubtractHealth(float Val) { Health -= Val; }
+
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -41,7 +47,5 @@ private:
 	class UDecalComponent* CursorToWorld;
 
 	float Health;
-
-	FORCEINLINE float GetHealth() const { return Health; }
 };
 
