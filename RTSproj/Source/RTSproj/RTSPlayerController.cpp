@@ -16,6 +16,17 @@ ARTSPlayerController::ARTSPlayerController()
 void ARTSPlayerController::BeginPlay()
 {
 	HUDPtr = Cast<ARTSHud>(GetHUD());
+
+	bSomeoneToStab = false;
+	Target = nullptr;
+}
+
+void ARTSPlayerController::Tick(float DeltaTime)
+{
+	if (bSomeoneToStab)
+	{
+		Knife();
+	}
 }
 
 void ARTSPlayerController::SetupInputComponent()
@@ -46,6 +57,9 @@ void ARTSPlayerController::FinishSelecting()
 
 void ARTSPlayerController::Move()
 {
+	bSomeoneToStab = false;
+	Target = nullptr;
+
 	if (!HUDPtr) { return; }
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
@@ -58,7 +72,7 @@ void ARTSPlayerController::Move()
 
 		for (auto Actor : SelectedActors)
 		{
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), MoveTo);		
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), MoveTo);
 		}
 	}
 }
@@ -72,26 +86,36 @@ void ARTSPlayerController::Knife()
 		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;
-		
+
 		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
-			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToStab)
 			{
+				if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+				{
+					Target = Hit.GetActor();
+				}
+				
 				for (auto Actor : SelectedActors)
 				{
-					if (Actor->GetName().Equals(Hit.GetActor()->GetName()))
+					if (Target && Actor->GetName().Equals(Target->GetName()))
 					{
 						continue; //TODO decide if we want to have friendly fire (if not put break)
 					}
 					else
 					{
-						float Damage;
+						if (!Target) { return; }
 
 						UE_LOG(LogTemp, Warning, TEXT("Knife"));
-						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Hit.GetActor());
+						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Target);
+
+						FVector VectorLength = Target->GetActorLocation() - Actor->GetActorLocation();
+						float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
+						UE_LOG(LogTemp, Warning, TEXT("Getting closer: %f"), Distance);
+
+						float Damage;
 						
-						//TODO knifing target logic
-						float DotProd = Hit.GetActor()->GetDotProductTo(Actor);
+						float DotProd = Target->GetDotProductTo(Actor);
 						
 						if (DotProd <= 0)
 						{
@@ -104,20 +128,24 @@ void ARTSPlayerController::Knife()
 							Damage = 50.f;
 						}
 
-						FVector VectorLength = Hit.GetActor()->GetActorLocation() - Actor->GetActorLocation();
-						float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
-						
-						if (Distance < 100.f)
+						if(Distance <= 150.f)
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Deal dmg"));
+							bSomeoneToStab = false;
 
 							UGameplayStatics::ApplyDamage(
-								Hit.GetActor(),
+								Target,
 								Damage,
 								this,
 								Actor,
 								UDamageType::StaticClass()
 							);
+
+							Target = nullptr;
+						}
+						else
+						{
+							bSomeoneToStab = true;
 						}
 					}
 				}

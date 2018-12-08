@@ -19,6 +19,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 	void SetupInputComponent() override;
 
 	class ARTSHud* HUDPtr;
@@ -31,4 +33,9 @@ protected:
 	void Move();
 
 	void Knife();
+
+private:
+	bool bSomeoneToStab;
+
+	AActor* Target;
 };
