@@ -32,6 +32,9 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE void AddHealth(float Val) { Health += Val; }
 	FORCEINLINE void SubtractHealth(float Val) { Health -= Val; }
+	FORCEINLINE bool IsCharacterDead() { return bIsDead; }
+
+	void DestroyCharacter();
 
 private:
 	/** Top down camera */
@@ -47,5 +50,7 @@ private:
 	class UDecalComponent* CursorToWorld;
 
 	float Health;
+
+	bool bIsDead;
 };
 

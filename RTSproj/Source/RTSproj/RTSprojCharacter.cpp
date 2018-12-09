@@ -58,6 +58,8 @@ ARTSprojCharacter::ARTSprojCharacter()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	Health = 100.f;
+
+	bIsDead = false;
 }
 
 void ARTSprojCharacter::Tick(float DeltaSeconds)
@@ -109,8 +111,15 @@ float ARTSprojCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	SubtractHealth(DamageAmount);
 	if (GetHealth() == 0.f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Character died"));
+		DestroyCharacter();
 	}
 
 	return DamageAmount;
+}
+
+void ARTSprojCharacter::DestroyCharacter()
+{
+	bIsDead = true;
+	this->DetachFromControllerPendingDestroy();
+	UE_LOG(LogTemp, Warning, TEXT("Character: %s is dead"), *(this->GetName()));
 }
