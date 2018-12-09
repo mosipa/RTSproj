@@ -89,11 +89,17 @@ void ARTSPlayerController::Knife()
 
 		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
+			//Check if target is character OR
+			//We already checked that but still there's someone to stab
 			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToStab)
 			{
 				if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
 				{
-					Target = Hit.GetActor();
+					//Check if you hover over another character and player did press a button again (1st time passes fine)
+					if (this->WasInputKeyJustPressed(FKey(FName("A"))))
+					{
+						Target = Hit.GetActor();
+					}
 				}
 				
 				for (auto Actor : SelectedActors)
