@@ -32,6 +32,8 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE void AddHealth(float Val) { Health += Val; }
 	FORCEINLINE void SubtractHealth(float Val) { Health -= Val; }
+
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsCharacterDead() { return bIsDead; }
 
 	void DestroyCharacter();
@@ -50,7 +52,6 @@ private:
 	class UDecalComponent* CursorToWorld;
 
 	float Health;
-
 	bool bIsDead;
 };
 
