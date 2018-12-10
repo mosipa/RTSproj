@@ -6,6 +6,7 @@
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/DamageType.h"
+#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -18,6 +19,7 @@ void ARTSPlayerController::BeginPlay()
 	HUDPtr = Cast<ARTSHud>(GetHUD());
 
 	bSomeoneToStab = false;
+	bSomeoneToShoot = false;
 	Target = nullptr;
 }
 
@@ -26,6 +28,10 @@ void ARTSPlayerController::Tick(float DeltaTime)
 	if (bSomeoneToStab)
 	{
 		Knife();
+	}
+	if (bSomeoneToShoot)
+	{
+		Pistol();
 	}
 }
 
@@ -38,6 +44,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
+	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 }
 
 void ARTSPlayerController::Select()
@@ -58,6 +65,7 @@ void ARTSPlayerController::FinishSelecting()
 void ARTSPlayerController::Move()
 {
 	bSomeoneToStab = false;
+	bSomeoneToShoot = false;
 	Target = nullptr;
 
 	if (!HUDPtr) { return; }
@@ -79,6 +87,8 @@ void ARTSPlayerController::Move()
 
 void ARTSPlayerController::Knife()
 {
+	bSomeoneToShoot = false;
+
 	if (!HUDPtr) { return; }
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
@@ -90,23 +100,20 @@ void ARTSPlayerController::Knife()
 		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
 			//Check if target is character OR
-			//We already checked that but still there's someone to stab
+			//there's someone to stab from previous order
 			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToStab)
 			{
-				if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+				//Check if you hover over another character and player did press a button again (1st time passes fine)
+				if (this->WasInputKeyJustPressed(FKey(FName("A"))))
 				{
-					//Check if you hover over another character and player did press a button again (1st time passes fine)
-					if (this->WasInputKeyJustPressed(FKey(FName("A"))))
-					{
-						Target = Hit.GetActor();
-					}
+					Target = Hit.GetActor();
 				}
 				
 				for (auto Actor : SelectedActors)
 				{
 					if (Target && Actor->GetName().Equals(Target->GetName()))
 					{
-						continue; //TODO decide if we want to have friendly fire (if not put break)
+						continue; //Prevent knifing yourself
 					}
 					else
 					{
@@ -115,8 +122,7 @@ void ARTSPlayerController::Knife()
 						UE_LOG(LogTemp, Warning, TEXT("Knife"));
 						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Target);
 
-						FVector VectorLength = Target->GetActorLocation() - Actor->GetActorLocation();
-						float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
+						float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
 						UE_LOG(LogTemp, Warning, TEXT("Getting closer: %f"), Distance);
 
 						float Damage;
@@ -153,6 +159,70 @@ void ARTSPlayerController::Knife()
 						{
 							bSomeoneToStab = true;
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+float ARTSPlayerController::GetDistance(FVector A, FVector B)
+{
+	FVector VectorLength = A - B;
+	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
+	return Distance;
+}
+
+void ARTSPlayerController::Pistol()
+{
+	bSomeoneToStab = false;
+
+	if (!HUDPtr) { return; }
+
+	if (HUDPtr->GetSelectedActors().Num() > 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Pistol"));
+
+		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+
+		FHitResult Hit;
+
+		GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit);
+		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToShoot)
+		{
+			if (this->WasInputKeyJustPressed(FKey(FName("G"))))
+			{
+				Target = Hit.GetActor();
+			}
+
+			for (auto Actor : SelectedActors)
+			{
+				if (Target->GetName().Equals(Actor->GetName()))
+				{
+					continue; //Prevent shooting yourself
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Aiming at other character"));
+
+					float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
+					
+					if (Distance >= 450.f)
+					{
+						//TODO doesnt work with 2 characters selected
+						UE_LOG(LogTemp, Warning, TEXT("Too far"));
+						
+						bSomeoneToShoot = true;
+						UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), Target->GetActorLocation());
+					}
+					else
+					{
+						//TODO doesnt work with 2 characters selected
+						//TODO shooting logic
+						UE_LOG(LogTemp, Warning, TEXT("Close enough"));
+
+						Actor->GetMovementComponent()->StopMovementImmediately();
+						bSomeoneToShoot = false;
 					}
 				}
 			}

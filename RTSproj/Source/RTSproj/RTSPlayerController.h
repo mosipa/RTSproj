@@ -34,8 +34,13 @@ protected:
 
 	void Knife();
 
+	void Pistol();
+
 private:
 	bool bSomeoneToStab;
+	bool bSomeoneToShoot;
 
 	AActor* Target;
+
+	float GetDistance(FVector A, FVector B);
 };
