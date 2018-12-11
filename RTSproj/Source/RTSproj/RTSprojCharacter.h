@@ -52,6 +52,6 @@ private:
 	class UDecalComponent* CursorToWorld;
 
 	float Health;
-	bool bIsDead;
+	bool bIsDead;;
 };
 

@@ -109,7 +109,7 @@ float ARTSprojCharacter::TakeDamage(float DamageAmount, struct FDamageEvent cons
 	UE_LOG(LogTemp, Warning, TEXT("Character: %s got hit and lose %f"), *(this->GetName()), DamageAmount);
 
 	SubtractHealth(DamageAmount);
-	if (GetHealth() == 0.f)
+	if (GetHealth() <= 0.f)
 	{
 		DestroyCharacter();
 	}

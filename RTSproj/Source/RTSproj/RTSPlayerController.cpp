@@ -7,6 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/DamageType.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
+#include "Projectile.h"
+#include "Engine/World.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -129,17 +131,21 @@ void ARTSPlayerController::Knife()
 						
 						float DotProd = Target->GetDotProductTo(Actor);
 						
+						//Behind the target
 						if (DotProd <= 0)
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Backstab"));
 							Damage = 100.f;
 						}
+						//In front of the target
 						else
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Frontstab"));
 							Damage = 50.f;
 						}
 
+						//TODO doesnt work with 2 characters
+						//TODO decide if we want to have 2 characters stabbing someone
 						if(Distance <= 150.f)
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Deal dmg"));
@@ -218,11 +224,21 @@ void ARTSPlayerController::Pistol()
 					else
 					{
 						//TODO doesnt work with 2 characters selected
-						//TODO shooting logic
+						//TODO shooting works but if in range it wont turn it face into the target
 						UE_LOG(LogTemp, Warning, TEXT("Close enough"));
 
 						Actor->GetMovementComponent()->StopMovementImmediately();
 						bSomeoneToShoot = false;
+
+						UE_LOG(LogTemp, Warning, TEXT("AFWD: %s"), *(Actor->GetActorForwardVector().ToString()));
+
+						auto Proj2 = GetWorld()->SpawnActor<AProjectile>(
+							Actor->GetActorLocation() + Actor->GetActorForwardVector() * 100.f,
+							Actor->GetActorRotation()
+							);
+
+						if (!Proj2) { return; }
+						Proj2->LaunchProjectile();
 					}
 				}
 			}
