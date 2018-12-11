@@ -60,6 +60,7 @@ ARTSprojCharacter::ARTSprojCharacter()
 	Health = 100.f;
 
 	bIsDead = false;
+	bIsBleeding = false;
 }
 
 void ARTSprojCharacter::Tick(float DeltaSeconds)
@@ -106,15 +107,38 @@ void ARTSprojCharacter::Unselect()
 
 float ARTSprojCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Character: %s got hit and lose %f"), *(this->GetName()), DamageAmount);
+	if (bIsDead) { return 0.f; }
 
+	UE_LOG(LogTemp, Warning, TEXT("Character: %s got hit and lose %f"), *(this->GetName()), DamageAmount);
+	
 	SubtractHealth(DamageAmount);
+	
+	return DamageAmount;
+}
+
+void ARTSprojCharacter::SubtractHealth(float Val)
+{
+	Health -= Val;
+	bIsBleeding = true;
+
 	if (GetHealth() <= 0.f)
 	{
+		bIsBleeding = false;
 		DestroyCharacter();
 	}
 
-	return DamageAmount;
+	//Bleed overtime
+	if (bIsBleeding)
+	{
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ARTSprojCharacter::Bleed, 1.f, false);
+	}
+}
+
+void ARTSprojCharacter::Bleed()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Character: %s is bleeding"), *(this->GetName()));
+	SubtractHealth(2.f);
 }
 
 void ARTSprojCharacter::DestroyCharacter()
