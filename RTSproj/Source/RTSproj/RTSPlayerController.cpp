@@ -9,6 +9,7 @@
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "Projectile.h"
 #include "Engine/World.h"
+#include "Engine/Classes/Kismet/KismetMathLibrary.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -151,6 +152,10 @@ void ARTSPlayerController::Knife()
 							UE_LOG(LogTemp, Warning, TEXT("Deal dmg"));
 							bSomeoneToStab = false;
 
+							//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
+							FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
+							Actor->SetActorRotation(BodyRotation);
+
 							UGameplayStatics::ApplyDamage(
 								Target,
 								Damage,
@@ -224,21 +229,22 @@ void ARTSPlayerController::Pistol()
 					else
 					{
 						//TODO doesnt work with 2 characters selected
-						//TODO shooting works but if in range it wont turn it face into the target
 						UE_LOG(LogTemp, Warning, TEXT("Close enough"));
+
+						//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
+						FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
+						Actor->SetActorRotation(BodyRotation);
 
 						Actor->GetMovementComponent()->StopMovementImmediately();
 						bSomeoneToShoot = false;
 
-						UE_LOG(LogTemp, Warning, TEXT("AFWD: %s"), *(Actor->GetActorForwardVector().ToString()));
-
-						auto Proj2 = GetWorld()->SpawnActor<AProjectile>(
+						auto Projectile = GetWorld()->SpawnActor<AProjectile>(
 							Actor->GetActorLocation() + Actor->GetActorForwardVector() * 100.f,
 							Actor->GetActorRotation()
 							);
 
-						if (!Proj2) { return; }
-						Proj2->LaunchProjectile();
+						if (!Projectile) { return; }
+						Projectile->LaunchProjectile();
 					}
 				}
 			}

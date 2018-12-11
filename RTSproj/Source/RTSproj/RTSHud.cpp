@@ -28,11 +28,7 @@ void ARTSHud::DrawHUD()
 
 		for(auto Character : ActorsToSelect)
 		{
-			if (Character->IsCharacterDead())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Selected is dead"));
-			}
-			else
+			if (!Character->IsCharacterDead())
 			{
 				SelectedActors.Add(Character);
 			}
