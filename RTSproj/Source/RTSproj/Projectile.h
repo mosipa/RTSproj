@@ -41,5 +41,6 @@ private:
 
 	float DestroyDelay = 3.f;
 
-	void OnTimerExpire();
+	UFUNCTION()
+		void OnTimerExpire();
 };

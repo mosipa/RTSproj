@@ -38,8 +38,7 @@ public:
 	FORCEINLINE bool IsCharacterDead() { return bIsDead; }
 
 	void DestroyCharacter();
-
-	FORCEINLINE void StopBleeding() { bIsBleeding = false; }
+	void StopBleeding();
 
 private:
 	/** Top down camera */
@@ -58,6 +57,9 @@ private:
 	bool bIsDead;
 	bool bIsBleeding;
 
-	void Bleed();
+	UFUNCTION()
+		void Bleed();
+
+	FTimerHandle BleedingTimerHandle;
 };
 

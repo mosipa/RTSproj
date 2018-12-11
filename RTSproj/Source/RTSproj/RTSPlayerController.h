@@ -46,4 +46,11 @@ private:
 	AActor* Target;
 
 	float GetDistance(FVector A, FVector B);
+
+	void PerformCleansing();
+
+	UFUNCTION()
+		void Cleansing();
+
+	FTimerHandle CleansingTimerHandle;
 };

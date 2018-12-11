@@ -130,8 +130,7 @@ void ARTSprojCharacter::SubtractHealth(float Val)
 	//Bleed overtime
 	if (bIsBleeding)
 	{
-		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ARTSprojCharacter::Bleed, 1.f, false);
+		GetWorld()->GetTimerManager().SetTimer(BleedingTimerHandle, this, &ARTSprojCharacter::Bleed, 1.f, false);
 	}
 }
 
@@ -139,6 +138,12 @@ void ARTSprojCharacter::Bleed()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Character: %s is bleeding"), *(this->GetName()));
 	SubtractHealth(2.f);
+}
+
+void ARTSprojCharacter::StopBleeding()
+{
+	bIsBleeding = false;
+	GetWorld()->GetTimerManager().ClearTimer(BleedingTimerHandle);
 }
 
 void ARTSprojCharacter::DestroyCharacter()

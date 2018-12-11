@@ -29,14 +29,9 @@ void ARTSPlayerController::BeginPlay()
 
 void ARTSPlayerController::Tick(float DeltaTime)
 {
-	if (bSomeoneToStab)
-	{
-		Knife();
-	}
-	if (bSomeoneToShoot)
-	{
-		Pistol();
-	}
+	if (bSomeoneToStab) { Knife(); }
+	if (bSomeoneToShoot) { Pistol(); }
+	if (bSomeoneToHeal) { WoundCleansing(); }
 }
 
 void ARTSPlayerController::SetupInputComponent()
@@ -71,6 +66,7 @@ void ARTSPlayerController::Move()
 {
 	bSomeoneToStab = false;
 	bSomeoneToShoot = false;
+	bSomeoneToHeal = false;
 	Target = nullptr;
 
 	if (!HUDPtr) { return; }
@@ -247,6 +243,8 @@ void ARTSPlayerController::Pistol()
 							Actor->GetActorRotation()
 							);
 
+						Target = nullptr;
+
 						if (!Projectile) { return; }
 						Projectile->LaunchProjectile();
 					}
@@ -284,21 +282,44 @@ void ARTSPlayerController::WoundCleansing()
 				{
 					float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
 
-					//TODO logic for cleansing
-					if (Distance >= 150)
+					if (Distance > 150)
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Too far for cleansing"));
 						bSomeoneToHeal = true;
+
+						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Target);
 					}
 					else
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Cleansing"));
-						bSomeoneToHeal = false;
 
-						//TODO use StopBleeding() method
+						//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
+						FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
+						Actor->SetActorRotation(BodyRotation);
+
+						bSomeoneToHeal = false;
+						PerformCleansing();
+						
+						UE_LOG(LogTemp, Warning, TEXT("%i"), bSomeoneToHeal);
 					}
 				}
 			}
 		}
 	}
+}
+
+void ARTSPlayerController::PerformCleansing()
+{
+	GetWorld()->GetTimerManager().SetTimer(CleansingTimerHandle, this, &ARTSPlayerController::Cleansing, 5.f, false);
+}
+
+void ARTSPlayerController::Cleansing()
+{
+	if (Target)
+	{
+		Cast<ARTSprojCharacter>(Target)->StopBleeding();
+		UE_LOG(LogTemp, Warning, TEXT("Target: %s cleansed"), *(Target->GetName()));
+	}
+	GetWorld()->GetTimerManager().ClearTimer(CleansingTimerHandle);
+	Target = nullptr;
 }
