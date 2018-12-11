@@ -32,11 +32,14 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE void AddHealth(float Val) { Health += Val; }
 	void SubtractHealth(float Val);
+	FORCEINLINE bool IsCharacterBleeding() { return bIsBleeding; }
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsCharacterDead() { return bIsDead; }
 
 	void DestroyCharacter();
+
+	FORCEINLINE void StopBleeding() { bIsBleeding = false; }
 
 private:
 	/** Top down camera */

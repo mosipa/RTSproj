@@ -23,6 +23,7 @@ void ARTSPlayerController::BeginPlay()
 
 	bSomeoneToStab = false;
 	bSomeoneToShoot = false;
+	bSomeoneToHeal = false;
 	Target = nullptr;
 }
 
@@ -48,6 +49,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
+	InputComponent->BindAction("WoundCleansing", IE_Pressed, this, &ARTSPlayerController::WoundCleansing);
 }
 
 void ARTSPlayerController::Select()
@@ -91,6 +93,7 @@ void ARTSPlayerController::Move()
 void ARTSPlayerController::Knife()
 {
 	bSomeoneToShoot = false;
+	bSomeoneToHeal = false;
 
 	if (!HUDPtr) { return; }
 
@@ -187,6 +190,7 @@ float ARTSPlayerController::GetDistance(FVector A, FVector B)
 void ARTSPlayerController::Pistol()
 {
 	bSomeoneToStab = false;
+	bSomeoneToHeal = false;
 
 	if (!HUDPtr) { return; }
 
@@ -245,6 +249,53 @@ void ARTSPlayerController::Pistol()
 
 						if (!Projectile) { return; }
 						Projectile->LaunchProjectile();
+					}
+				}
+			}
+		}
+	}
+}
+
+void ARTSPlayerController::WoundCleansing()
+{
+	bSomeoneToStab = false;
+	bSomeoneToShoot = false;
+
+	if (!HUDPtr) { return; }
+
+	if (HUDPtr->GetSelectedActors().Num() > 0)
+	{
+		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+
+		FHitResult Hit;
+
+		GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit);
+		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToHeal)
+		{
+			if (this->WasInputKeyJustPressed(FKey(FName("C"))))
+			{
+				Target = Hit.GetActor();
+			}
+
+			//Only do it if Target is bleeding
+			if (Cast<ARTSprojCharacter>(Target)->IsCharacterBleeding())
+			{
+				for (auto Actor : SelectedActors)
+				{
+					float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
+
+					//TODO logic for cleansing
+					if (Distance >= 150)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Too far for cleansing"));
+						bSomeoneToHeal = true;
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Cleansing"));
+						bSomeoneToHeal = false;
+
+						//TODO use StopBleeding() method
 					}
 				}
 			}
