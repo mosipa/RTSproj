@@ -14,7 +14,7 @@
 ARTSPlayerController::ARTSPlayerController()
 {
 	bShowMouseCursor = true;
-	DefaultMouseCursor = EMouseCursor::Crosshairs;
+	DefaultMouseCursor = EMouseCursor::Hand;
 }
 
 void ARTSPlayerController::BeginPlay()
@@ -294,8 +294,17 @@ void ARTSPlayerController::WoundCleansing()
 						UE_LOG(LogTemp, Warning, TEXT("Cleansing"));
 
 						//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
-						FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
-						Actor->SetActorRotation(BodyRotation);
+						FRotator ActorBodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
+						Actor->SetActorRotation(ActorBodyRotation);
+
+						//Rotation of target's body (faces actor that's cleansing him)
+						//Only do it if the target and actor isn't the same character
+						if (!Target->GetName().Equals(Actor->GetName()))
+						{
+							
+							FRotator TargetBodyRotation = UKismetMathLibrary::FindLookAtRotation(Target->GetActorLocation(), Actor->GetActorLocation());
+							Target->SetActorRotation(TargetBodyRotation);
+						}
 
 						bSomeoneToHeal = false;
 						PerformCleansing();
