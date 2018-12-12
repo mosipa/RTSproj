@@ -25,6 +25,9 @@ void ARTSPlayerController::BeginPlay()
 	bSomeoneToShoot = false;
 	bSomeoneToAid = false;
 	Target = nullptr;
+
+	CleansingTime = 5.f;
+	HealingTime = 2.f;
 }
 
 void ARTSPlayerController::Tick(float DeltaTime)
@@ -39,6 +42,8 @@ void ARTSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	if (!InputComponent) { return; }
+
+	//TODO cant command more than 1 unit; after getting more units to command - latest command gets ignored
 
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
@@ -300,7 +305,6 @@ void ARTSPlayerController::Aid()
 					}
 					else
 					{
-						//TODO selfheal and selfcleanse takes longer
 						UE_LOG(LogTemp, Warning, TEXT("Aid"));
 
 						//Rotation of a actor's body (in case of player is in range so he doesnt have to move around to the target location)
@@ -313,6 +317,15 @@ void ARTSPlayerController::Aid()
 
 							FRotator TargetBodyRotation = UKismetMathLibrary::FindLookAtRotation(Target->GetActorLocation(), Actor->GetActorLocation());
 							Target->SetActorRotation(TargetBodyRotation);
+
+							//As character that aids isn't the target there's no penalty for Aiding
+							SelfAidTime = 0.f;
+						}
+						//If target equals character, it takes him longer to self-heal or self-cleanse
+						else
+						{
+							//Penalty for self-heal or self-cleanse
+							SelfAidTime = 2.f;
 						}
 
 						bSomeoneToAid = false;
@@ -328,11 +341,11 @@ void ARTSPlayerController::PerformAid()
 {
 	if (AidState == EAidState::Cleansing)
 	{
-		GetWorld()->GetTimerManager().SetTimer(CleansingTimerHandle, this, &ARTSPlayerController::Cleansing, 5.f, false);
+		GetWorld()->GetTimerManager().SetTimer(CleansingTimerHandle, this, &ARTSPlayerController::Cleansing, CleansingTime + SelfAidTime, false);
 	}
 	if (AidState == EAidState::Healing)
 	{
-		GetWorld()->GetTimerManager().SetTimer(HealingTimerHandle, this, &ARTSPlayerController::Healing, 2.f, false);
+		GetWorld()->GetTimerManager().SetTimer(HealingTimerHandle, this, &ARTSPlayerController::Healing, HealingTime + SelfAidTime, false);
 	}
 }
 

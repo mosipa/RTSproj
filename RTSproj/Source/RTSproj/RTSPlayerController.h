@@ -65,4 +65,8 @@ private:
 	};
 
 	EAidState AidState;
+
+	float CleansingTime;
+	float HealingTime;
+	float SelfAidTime;
 };
