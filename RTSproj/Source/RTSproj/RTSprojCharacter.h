@@ -30,9 +30,10 @@ public:
 	float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser);
 
 	FORCEINLINE float GetHealth() const { return Health; }
-	FORCEINLINE void AddHealth(float Val) { Health += Val; }
+	FORCEINLINE void AddHealth(float Val) { Health = FMath::Clamp<float>(GetHealth() + Val, 0.f, 100.f); }
 	void SubtractHealth(float Val);
 	FORCEINLINE bool IsCharacterBleeding() { return bIsBleeding; }
+	FORCEINLINE bool IsCharacterInjured() { return GetHealth() != 100.f; }
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsCharacterDead() { return bIsDead; }

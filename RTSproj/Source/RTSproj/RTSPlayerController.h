@@ -36,24 +36,33 @@ protected:
 
 	void Pistol();
 
-	void WoundCleansing();
-
-	void Healing();
+	void Aid();
 
 private:
 	bool bSomeoneToStab;
 	bool bSomeoneToShoot;
-	bool bSomeoneToCleanse;
-	bool bSomeoneToHeal;
+	bool bSomeoneToAid;
 
 	AActor* Target;
 
 	float GetDistance(FVector A, FVector B);
 
-	void PerformCleansing();
+	void PerformAid();
 
 	UFUNCTION()
 		void Cleansing();
 
+	UFUNCTION()
+		void Healing();
+
 	FTimerHandle CleansingTimerHandle;
+	FTimerHandle HealingTimerHandle;
+
+	enum class EAidState : uint8
+	{
+		Cleansing,
+		Healing
+	};
+
+	EAidState AidState;
 };
