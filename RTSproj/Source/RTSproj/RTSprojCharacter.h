@@ -33,8 +33,12 @@ public:
 	FORCEINLINE void AddHealth(float Val) { Health = FMath::Clamp<float>(GetHealth() + Val, 0.f, 100.f); }
 	void SubtractHealth(float Val);
 	FORCEINLINE bool IsCharacterBleeding() { return bIsBleeding; }
+
+	//BlueprintCallable for animation update
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsCharacterInjured() { return GetHealth() != 100.f; }
 
+	//BlueprintCallable for animation update
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsCharacterDead() { return bIsDead; }
 
