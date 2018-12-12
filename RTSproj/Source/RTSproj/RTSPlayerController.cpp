@@ -23,6 +23,7 @@ void ARTSPlayerController::BeginPlay()
 
 	bSomeoneToStab = false;
 	bSomeoneToShoot = false;
+	bSomeoneToCleanse = false;
 	bSomeoneToHeal = false;
 	Target = nullptr;
 }
@@ -31,7 +32,7 @@ void ARTSPlayerController::Tick(float DeltaTime)
 {
 	if (bSomeoneToStab) { Knife(); }
 	if (bSomeoneToShoot) { Pistol(); }
-	if (bSomeoneToHeal) { WoundCleansing(); }
+	if (bSomeoneToCleanse) { WoundCleansing(); }
 }
 
 void ARTSPlayerController::SetupInputComponent()
@@ -45,6 +46,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("WoundCleansing", IE_Pressed, this, &ARTSPlayerController::WoundCleansing);
+	InputComponent->BindAction("Healing", IE_Pressed, this, &ARTSPlayerController::Healing);
 }
 
 void ARTSPlayerController::Select()
@@ -66,6 +68,7 @@ void ARTSPlayerController::Move()
 {
 	bSomeoneToStab = false;
 	bSomeoneToShoot = false;
+	bSomeoneToCleanse = false;
 	bSomeoneToHeal = false;
 	Target = nullptr;
 
@@ -89,6 +92,7 @@ void ARTSPlayerController::Move()
 void ARTSPlayerController::Knife()
 {
 	bSomeoneToShoot = false;
+	bSomeoneToCleanse = false;
 	bSomeoneToHeal = false;
 
 	if (!HUDPtr) { return; }
@@ -186,6 +190,7 @@ float ARTSPlayerController::GetDistance(FVector A, FVector B)
 void ARTSPlayerController::Pistol()
 {
 	bSomeoneToStab = false;
+	bSomeoneToCleanse = false;
 	bSomeoneToHeal = false;
 
 	if (!HUDPtr) { return; }
@@ -258,6 +263,7 @@ void ARTSPlayerController::WoundCleansing()
 {
 	bSomeoneToStab = false;
 	bSomeoneToShoot = false;
+	bSomeoneToHeal = false;
 
 	if (!HUDPtr) { return; }
 
@@ -268,7 +274,7 @@ void ARTSPlayerController::WoundCleansing()
 		FHitResult Hit;
 
 		GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit);
-		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToHeal)
+		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToCleanse)
 		{
 			if (this->WasInputKeyJustPressed(FKey(FName("C"))))
 			{
@@ -285,7 +291,7 @@ void ARTSPlayerController::WoundCleansing()
 					if (Distance > 150)
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Too far for cleansing"));
-						bSomeoneToHeal = true;
+						bSomeoneToCleanse = true;
 
 						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Target);
 					}
@@ -306,10 +312,8 @@ void ARTSPlayerController::WoundCleansing()
 							Target->SetActorRotation(TargetBodyRotation);
 						}
 
-						bSomeoneToHeal = false;
+						bSomeoneToCleanse = false;
 						PerformCleansing();
-						
-						UE_LOG(LogTemp, Warning, TEXT("%i"), bSomeoneToHeal);
 					}
 				}
 			}
@@ -331,4 +335,42 @@ void ARTSPlayerController::Cleansing()
 	}
 	GetWorld()->GetTimerManager().ClearTimer(CleansingTimerHandle);
 	Target = nullptr;
+}
+
+void ARTSPlayerController::Healing()
+{
+	bSomeoneToStab = false;
+	bSomeoneToShoot = false;
+	bSomeoneToCleanse = false;
+
+	if (!HUDPtr) { return; }
+	if (HUDPtr->GetSelectedActors().Num() > 0)
+	{
+		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+
+		FHitResult Hit;
+		GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit);
+
+		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToHeal)
+		{
+			if (this->WasInputKeyJustPressed(FKey(FName("H"))))
+			{
+				Target = Hit.GetActor();
+			}
+
+			for (auto Actor : SelectedActors)
+			{
+				float Distance = GetDistance(Actor->GetActorLocation(), Target->GetActorLocation());
+
+				if (Distance > 150.f)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Too far for healing"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Healing"));
+				}
+			}
+		}
+	}
 }

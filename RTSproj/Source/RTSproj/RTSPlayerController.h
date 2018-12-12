@@ -38,9 +38,12 @@ protected:
 
 	void WoundCleansing();
 
+	void Healing();
+
 private:
 	bool bSomeoneToStab;
 	bool bSomeoneToShoot;
+	bool bSomeoneToCleanse;
 	bool bSomeoneToHeal;
 
 	AActor* Target;
