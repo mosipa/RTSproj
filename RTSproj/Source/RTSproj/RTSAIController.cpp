@@ -8,6 +8,7 @@
 #include "GameFramework/DamageType.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
+#include "Projectile.h"
 
 float ARTSAIController::GetDistance(FVector A, FVector B)
 {
@@ -18,11 +19,17 @@ float ARTSAIController::GetDistance(FVector A, FVector B)
 
 void ARTSAIController::Move(FVector MoveTo)
 {
+	//Clearing timers of other actions (in case player changed his mind)
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
 }
 
 void ARTSAIController::Knife(FHitResult Hit)
 {	
+	//Clearing timers of other actions (in case player changed his mind)
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
 	{
 		Target = Hit.GetActor();
@@ -59,8 +66,9 @@ void ARTSAIController::PrepareAttack()
 
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(this, Target);
 
+	AttackState = EAttackState::Knifing;
 	//TODO distance between points is taken in straight line, ignoring any obsticles actor preparing attack may occur
-	GetWorld()->GetTimerManager().SetTimer(KnifeTimerHandle, this, &ARTSAIController::PerformAttack, TimeToReach, false);
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &ARTSAIController::PerformAttack, TimeToReach, false);
 }
 
 void ARTSAIController::PerformAttack()
@@ -71,17 +79,76 @@ void ARTSAIController::PerformAttack()
 		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(this->GetPawn()->GetActorLocation(), Target->GetActorLocation());
 		this->GetPawn()->SetActorRotation(BodyRotation);
 
-		UGameplayStatics::ApplyDamage(
-			Target,
-			Damage,
-			this,
-			this->GetPawn(),
-			UDamageType::StaticClass()
-		);
+		if (AttackState == EAttackState::Knifing)
+		{
+			UGameplayStatics::ApplyDamage(
+				Target,
+				Damage,
+				this,
+				this->GetPawn(),
+				UDamageType::StaticClass()
+			);
+		}
+		else if (AttackState == EAttackState::FiringGun)
+		{
+			this->GetPawn()->GetMovementComponent()->StopMovementImmediately();
+
+			auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+				this->GetPawn()->GetActorLocation() + this->GetPawn()->GetActorForwardVector() * 100.f,
+				this->GetPawn()->GetActorRotation()
+				);
+
+			if (!Projectile) { return; }
+			Projectile->LaunchProjectile();
+		}
 	}
 
-	GetWorld()->GetTimerManager().ClearTimer(KnifeTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	Target = nullptr;
+}
+
+void ARTSAIController::FirePistol(FHitResult Hit)
+{
+	//Clearing timers of other actions (in case player changed his mind)
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+
+	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+	{
+		Target = Hit.GetActor();
+
+		//Prepare for attack only if you have target,
+		//you're not the target
+		//and your target isnt dead already
+		if (Target && !(this->GetPawn()->GetName().Equals(Target->GetName()))
+			&& !Cast<ARTSprojCharacter>(Target)->IsCharacterDead())
+		{
+			PrepareToFire();
+		}
+	}
+}
+
+void ARTSAIController::PrepareToFire()
+{
+	float Distance = GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
+	float TimeToReach;
+
+	//Range is 450.f
+	if (Distance > 450.f) 
+	{ 
+		Distance -= 450.f; 
+		float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
+		TimeToReach = Distance / MaxSpd;
+
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this->GetPawn()->GetController(), Target->GetActorLocation());
+	}
+	else 
+	{ 
+		TimeToReach = 0.1f;
+	}
+
+	AttackState = EAttackState::FiringGun;
+	//TODO distance between points is taken in straight line, ignoring any obsticles actor preparing attack may occur
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &ARTSAIController::PerformAttack, TimeToReach, false);
 }
 
 void ARTSAIController::PresentYourself()

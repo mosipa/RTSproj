@@ -19,6 +19,8 @@ public:
 	
 	void Knife(FHitResult Hit);
 
+	void FirePistol(FHitResult Hit);
+
 	void PresentYourself();
 
 private:
@@ -28,10 +30,20 @@ private:
 
 	float GetDistance(FVector A, FVector B);
 
-	FTimerHandle KnifeTimerHandle;
+	FTimerHandle AttackTimerHandle;
 
 	void PrepareAttack();
 	
 	UFUNCTION()
 		void PerformAttack();
+
+	void PrepareToFire();
+
+	enum class EAttackState : uint8
+	{
+		Knifing,
+		FiringGun
+	};
+
+	EAttackState AttackState;
 };

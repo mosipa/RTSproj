@@ -45,7 +45,7 @@ void ARTSPlayerController::SetupInputComponent()
 	if (!InputComponent) { return; }
 
 	//TODO cant command more than 1 unit; after getting more units to command - latest command gets ignored
-	//KNIFING with multi units seleceted works
+	//KNIFING, FIRING with multi units seleceted works
 
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
@@ -70,8 +70,11 @@ void ARTSPlayerController::TestInput()
 		{
 			for (auto Actor : SelectedActors)
 			{
-				Cast<ARTSAIController>(Actor->GetController())->PresentYourself();
-				Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
+				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+				{
+					Cast<ARTSAIController>(Actor->GetController())->PresentYourself();
+					Cast<ARTSAIController>(Actor->GetController())->FirePistol(Hit);
+				}
 			}
 		}
 	}
@@ -94,11 +97,6 @@ void ARTSPlayerController::FinishSelecting()
 
 void ARTSPlayerController::Move()
 {
-	bSomeoneToStab = false;
-	bSomeoneToShoot = false;
-	bSomeoneToAid = false;
-	Target = nullptr;
-
 	if (!HUDPtr) { return; }
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
@@ -111,7 +109,11 @@ void ARTSPlayerController::Move()
 
 		for (auto Actor : SelectedActors)
 		{
-			Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
+			//If character was selected but died in process dont give him an order
+			if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+			{
+				Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
+			}
 		}
 	}
 }
@@ -130,7 +132,11 @@ void ARTSPlayerController::Knife()
 		{
 			for (auto Actor : SelectedActors)
 			{
-				Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
+				//If character was selected but died in process dont give him an order
+				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+				{
+					Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
+				}
 			}
 		}
 	}
@@ -145,69 +151,22 @@ float ARTSPlayerController::GetDistance(FVector A, FVector B)
 
 void ARTSPlayerController::Pistol()
 {
-	bSomeoneToStab = false;
-	bSomeoneToAid = false;
-
 	if (!HUDPtr) { return; }
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Pistol"));
-
 		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;
 
-		GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit);
-		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToShoot)
+		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
-			if (this->WasInputKeyJustPressed(FKey(FName("G"))))
-			{
-				Target = Hit.GetActor();
-			}
-
 			for (auto Actor : SelectedActors)
 			{
-				if (Target->GetName().Equals(Actor->GetName()))
+				//If character was selected but died in process dont give him an order
+				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
 				{
-					continue; //Prevent shooting yourself
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Aiming at other character"));
-
-					float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
-					
-					if (Distance >= 450.f)
-					{
-						//TODO doesnt work with 2 characters selected
-						UE_LOG(LogTemp, Warning, TEXT("Too far"));
-						
-						bSomeoneToShoot = true;
-						UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), Target->GetActorLocation());
-					}
-					else
-					{
-						//TODO doesnt work with 2 characters selected
-						UE_LOG(LogTemp, Warning, TEXT("Close enough"));
-
-						//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
-						FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
-						Actor->SetActorRotation(BodyRotation);
-
-						Actor->GetMovementComponent()->StopMovementImmediately();
-						bSomeoneToShoot = false;
-
-						auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-							Actor->GetActorLocation() + Actor->GetActorForwardVector() * 100.f,
-							Actor->GetActorRotation()
-							);
-
-						Target = nullptr;
-
-						if (!Projectile) { return; }
-						Projectile->LaunchProjectile();
-					}
+					Cast<ARTSAIController>(Actor->GetController())->FirePistol(Hit);
 				}
 			}
 		}
