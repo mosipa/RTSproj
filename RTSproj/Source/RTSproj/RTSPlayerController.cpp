@@ -10,6 +10,7 @@
 #include "Projectile.h"
 #include "Engine/World.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
+#include "RTSAIController.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -51,6 +52,22 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
+	InputComponent->BindAction("TestInput", IE_Pressed, this, &ARTSPlayerController::TestInput);
+}
+
+void ARTSPlayerController::TestInput()
+{
+	if (!HUDPtr) { return; }
+
+	if (HUDPtr->GetSelectedActors().Num() > 0)
+	{
+		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+
+		for (auto Actor : SelectedActors)
+		{
+			Cast<ARTSAIController>(Actor->GetController())->PresentYourself();
+		}
+	}
 }
 
 void ARTSPlayerController::Select()
@@ -87,7 +104,7 @@ void ARTSPlayerController::Move()
 
 		for (auto Actor : SelectedActors)
 		{
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Actor->GetController(), MoveTo);
+			Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
 		}
 	}
 }

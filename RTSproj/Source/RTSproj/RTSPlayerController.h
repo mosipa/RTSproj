@@ -38,6 +38,8 @@ protected:
 
 	void Aid();
 
+	void TestInput();
+
 private:
 	bool bSomeoneToStab;
 	bool bSomeoneToShoot;
@@ -69,4 +71,6 @@ private:
 	float CleansingTime;
 	float HealingTime;
 	float SelfAidTime;
+
+	class ARTSprojCharacter* ControlledUnit;
 };
