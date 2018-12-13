@@ -17,5 +17,21 @@ class RTSPROJ_API ARTSAIController : public AAIController
 public:
 	void Move(FVector MoveTo);
 	
+	void Knife(FHitResult Hit);
+
 	void PresentYourself();
+
+private:
+	float Damage;
+
+	AActor* Target;
+
+	float GetDistance(FVector A, FVector B);
+
+	FTimerHandle KnifeTimerHandle;
+
+	void PrepareAttack();
+	
+	UFUNCTION()
+		void PerformAttack();
 };

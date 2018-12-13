@@ -45,6 +45,7 @@ void ARTSPlayerController::SetupInputComponent()
 	if (!InputComponent) { return; }
 
 	//TODO cant command more than 1 unit; after getting more units to command - latest command gets ignored
+	//KNIFING with multi units seleceted works
 
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
@@ -63,9 +64,15 @@ void ARTSPlayerController::TestInput()
 	{
 		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
-		for (auto Actor : SelectedActors)
+		FHitResult Hit;
+
+		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
-			Cast<ARTSAIController>(Actor->GetController())->PresentYourself();
+			for (auto Actor : SelectedActors)
+			{
+				Cast<ARTSAIController>(Actor->GetController())->PresentYourself();
+				Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
+			}
 		}
 	}
 }
@@ -111,9 +118,6 @@ void ARTSPlayerController::Move()
 
 void ARTSPlayerController::Knife()
 {
-	bSomeoneToShoot = false;
-	bSomeoneToAid = false;
-
 	if (!HUDPtr) { return; }
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
@@ -124,76 +128,9 @@ void ARTSPlayerController::Knife()
 
 		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
-			//Check if target is character OR
-			//there's someone to stab from previous order
-			if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToStab)
+			for (auto Actor : SelectedActors)
 			{
-				//Check if you hover over another character and player did press a button again (1st time passes fine)
-				if (this->WasInputKeyJustPressed(FKey(FName("A"))))
-				{
-					Target = Hit.GetActor();
-				}
-				
-				for (auto Actor : SelectedActors)
-				{
-					if (Target && Actor->GetName().Equals(Target->GetName()))
-					{
-						continue; //Prevent knifing yourself
-					}
-					else
-					{
-						if (!Target) { return; }
-
-						UE_LOG(LogTemp, Warning, TEXT("Knife"));
-						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Target);
-
-						float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
-						UE_LOG(LogTemp, Warning, TEXT("Getting closer: %f"), Distance);
-
-						float Damage;
-						
-						float DotProd = Target->GetDotProductTo(Actor);
-						
-						//Behind the target
-						if (DotProd <= 0)
-						{
-							UE_LOG(LogTemp, Warning, TEXT("Backstab"));
-							Damage = 100.f;
-						}
-						//In front of the target
-						else
-						{
-							UE_LOG(LogTemp, Warning, TEXT("Frontstab"));
-							Damage = 50.f;
-						}
-
-						//TODO doesnt work with 2 characters
-						//TODO decide if we want to have 2 characters stabbing someone
-						if(Distance <= 150.f)
-						{
-							UE_LOG(LogTemp, Warning, TEXT("Deal dmg"));
-							bSomeoneToStab = false;
-
-							//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
-							FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
-							Actor->SetActorRotation(BodyRotation);
-
-							UGameplayStatics::ApplyDamage(
-								Target,
-								Damage,
-								this,
-								Actor,
-								UDamageType::StaticClass()
-							);
-
-							Target = nullptr;
-						}
-						else
-						{
-							bSomeoneToStab = true;
-						}
-					}
-				}
+				Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
 			}
 		}
 	}
