@@ -9,6 +9,14 @@
 /**
  * 
  */
+enum class EUnitState : uint8
+{
+	Knifing,
+	FiringGun,
+	Cleansing,
+	Healing
+};
+
 UCLASS()
 class RTSPROJ_API ARTSAIController : public AAIController
 {
@@ -23,6 +31,8 @@ public:
 
 	void PresentYourself();
 
+	void Aid(FHitResult Hit, EUnitState UnitState);
+
 private:
 	float Damage;
 
@@ -31,19 +41,21 @@ private:
 	float GetDistance(FVector A, FVector B);
 
 	FTimerHandle AttackTimerHandle;
+	FTimerHandle AidTimerHandle;
 
 	void PrepareAttack();
-	
+	void PrepareToFire();
+
 	UFUNCTION()
 		void PerformAttack();
 
-	void PrepareToFire();
+	void PrepareAid();
+	
+	UFUNCTION()
+		void PerformAid();
 
-	enum class EAttackState : uint8
-	{
-		Knifing,
-		FiringGun
-	};
+	EUnitState InteriorUnitState;
 
-	EAttackState AttackState;
+	float AidTime;
+	float SelfAidPenalty;
 };

@@ -21,6 +21,7 @@ void ARTSAIController::Move(FVector MoveTo)
 {
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
 }
@@ -29,6 +30,7 @@ void ARTSAIController::Knife(FHitResult Hit)
 {	
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
 	{
@@ -66,51 +68,16 @@ void ARTSAIController::PrepareAttack()
 
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(this, Target);
 
-	AttackState = EAttackState::Knifing;
+	InteriorUnitState = EUnitState::Knifing;
 	//TODO distance between points is taken in straight line, ignoring any obsticles actor preparing attack may occur
 	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &ARTSAIController::PerformAttack, TimeToReach, false);
-}
-
-void ARTSAIController::PerformAttack()
-{
-	if (Target)
-	{
-		//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
-		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(this->GetPawn()->GetActorLocation(), Target->GetActorLocation());
-		this->GetPawn()->SetActorRotation(BodyRotation);
-
-		if (AttackState == EAttackState::Knifing)
-		{
-			UGameplayStatics::ApplyDamage(
-				Target,
-				Damage,
-				this,
-				this->GetPawn(),
-				UDamageType::StaticClass()
-			);
-		}
-		else if (AttackState == EAttackState::FiringGun)
-		{
-			this->GetPawn()->GetMovementComponent()->StopMovementImmediately();
-
-			auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-				this->GetPawn()->GetActorLocation() + this->GetPawn()->GetActorForwardVector() * 100.f,
-				this->GetPawn()->GetActorRotation()
-				);
-
-			if (!Projectile) { return; }
-			Projectile->LaunchProjectile();
-		}
-	}
-
-	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-	Target = nullptr;
 }
 
 void ARTSAIController::FirePistol(FHitResult Hit)
 {
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
 	{
@@ -146,9 +113,135 @@ void ARTSAIController::PrepareToFire()
 		TimeToReach = 0.1f;
 	}
 
-	AttackState = EAttackState::FiringGun;
+	InteriorUnitState = EUnitState::FiringGun;
 	//TODO distance between points is taken in straight line, ignoring any obsticles actor preparing attack may occur
 	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &ARTSAIController::PerformAttack, TimeToReach, false);
+}
+
+void ARTSAIController::PerformAttack()
+{
+	if (Target)
+	{
+		//Rotation of a body (in case of player is in range so he doesnt have to move around to the target location)
+		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(this->GetPawn()->GetActorLocation(), Target->GetActorLocation());
+		this->GetPawn()->SetActorRotation(BodyRotation);
+
+		if (InteriorUnitState == EUnitState::Knifing)
+		{
+			UGameplayStatics::ApplyDamage(
+				Target,
+				Damage,
+				this,
+				this->GetPawn(),
+				UDamageType::StaticClass()
+			);
+		}
+		else if (InteriorUnitState == EUnitState::FiringGun)
+		{
+			this->GetPawn()->GetMovementComponent()->StopMovementImmediately();
+
+			auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+				this->GetPawn()->GetActorLocation() + this->GetPawn()->GetActorForwardVector() * 100.f,
+				this->GetPawn()->GetActorRotation()
+				);
+
+			if (!Projectile) { return; }
+			Projectile->LaunchProjectile();
+		}
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	Target = nullptr;
+}
+
+void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
+{
+	//Clearing timers of other actions (in case player changed his mind)
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+
+	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+	{
+		Target = Hit.GetActor();
+		if (UnitState == EUnitState::Cleansing)
+		{
+			InteriorUnitState = EUnitState::Cleansing;
+			AidTime = 5.f;
+		}
+		else if (UnitState == EUnitState::Healing)
+		{
+			InteriorUnitState = EUnitState::Healing;
+			AidTime = 2.f;
+		}
+
+		//There's character to heal
+		//and he's not dead
+		if (Target && !Cast<ARTSprojCharacter>(Target)->IsCharacterDead())
+		{
+			//Only do it if Target is bleeding or is injured
+			if (Cast<ARTSprojCharacter>(Target)->IsCharacterBleeding()
+				|| Cast<ARTSprojCharacter>(Target)->IsCharacterInjured())
+			{
+				PrepareAid();
+			}
+		}
+	}
+
+}
+
+void ARTSAIController::PrepareAid()
+{
+	float Distance = GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
+	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
+	float TimeToReach = Distance / MaxSpd;
+
+	if (!Target->GetName().Equals(this->GetPawn()->GetName()))
+	{
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(this, Target);
+		//As character that aids isn't the target there's no penalty for Aiding
+		SelfAidPenalty = 0.f;
+	}
+	//If target equals character, it takes him longer to self-heal or self-cleanse
+	else
+	{
+		SelfAidPenalty = 2.f;
+		TimeToReach = 0.f;
+	}
+
+	//TODO distance between points is taken in straight line, ignoring any obsticles actor preparing attack may occur
+	GetWorld()->GetTimerManager().SetTimer(AidTimerHandle, this, &ARTSAIController::PerformAid, AidTime + TimeToReach + SelfAidPenalty, false);
+}
+
+void ARTSAIController::PerformAid()
+{
+	if (Target)
+	{
+		//TODO FIX ROTATION, IT APPLIES AFTER BECAUSE OF THE TIMER (DO WE NEED 2ND TIMER?)
+		//Rotation of a actor's body (in case of player is in range so he doesnt have to move around to the target location)
+		//Rotation of target's body (faces actor that's aiding him)
+		//Only do it if the target and actor isn't the same character
+		if (!Target->GetName().Equals(this->GetPawn()->GetName()))
+		{
+			FRotator ActorBodyRotation = UKismetMathLibrary::FindLookAtRotation(this->GetPawn()->GetActorLocation(), Target->GetActorLocation());
+			this->GetPawn()->SetActorRotation(ActorBodyRotation);
+
+			FRotator TargetBodyRotation = UKismetMathLibrary::FindLookAtRotation(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
+			Target->SetActorRotation(TargetBodyRotation);
+		}
+
+		if (InteriorUnitState == EUnitState::Cleansing)
+		{
+			Cast<ARTSprojCharacter>(Target)->StopBleeding();
+		}
+		else if (InteriorUnitState == EUnitState::Healing)
+		{
+			Cast<ARTSprojCharacter>(Target)->AddHealth(20.f);
+			UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSprojCharacter>(Target)->GetHealth());
+		}
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	Target = nullptr;
 }
 
 void ARTSAIController::PresentYourself()

@@ -3,13 +3,7 @@
 #include "RTSPlayerController.h"
 #include "RTSHud.h"
 #include "RTSprojCharacter.h"
-#include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "GameFramework/DamageType.h"
-#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
-#include "Projectile.h"
 #include "Engine/World.h"
-#include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "RTSAIController.h"
 
 ARTSPlayerController::ARTSPlayerController()
@@ -21,22 +15,6 @@ ARTSPlayerController::ARTSPlayerController()
 void ARTSPlayerController::BeginPlay()
 {
 	HUDPtr = Cast<ARTSHud>(GetHUD());
-
-	bSomeoneToStab = false;
-	bSomeoneToShoot = false;
-	bSomeoneToAid = false;
-	Target = nullptr;
-
-	CleansingTime = 5.f;
-	HealingTime = 2.f;
-}
-
-void ARTSPlayerController::Tick(float DeltaTime)
-{
-	//TODO change it to timers, there's no need to call it every tick
-	if (bSomeoneToStab) { Knife(); }
-	if (bSomeoneToShoot) { Pistol(); }
-	if (bSomeoneToAid) { Aid(); }
 }
 
 void ARTSPlayerController::SetupInputComponent()
@@ -44,40 +22,12 @@ void ARTSPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 	if (!InputComponent) { return; }
 
-	//TODO cant command more than 1 unit; after getting more units to command - latest command gets ignored
-	//KNIFING, FIRING with multi units seleceted works
-
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
-	InputComponent->BindAction("TestInput", IE_Pressed, this, &ARTSPlayerController::TestInput);
-}
-
-void ARTSPlayerController::TestInput()
-{
-	if (!HUDPtr) { return; }
-
-	if (HUDPtr->GetSelectedActors().Num() > 0)
-	{
-		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
-
-		FHitResult Hit;
-
-		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
-		{
-			for (auto Actor : SelectedActors)
-			{
-				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
-				{
-					Cast<ARTSAIController>(Actor->GetController())->PresentYourself();
-					Cast<ARTSAIController>(Actor->GetController())->FirePistol(Hit);
-				}
-			}
-		}
-	}
 }
 
 void ARTSPlayerController::Select()
@@ -142,13 +92,6 @@ void ARTSPlayerController::Knife()
 	}
 }
 
-float ARTSPlayerController::GetDistance(FVector A, FVector B)
-{
-	FVector VectorLength = A - B;
-	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
-	return Distance;
-}
-
 void ARTSPlayerController::Pistol()
 {
 	if (!HUDPtr) { return; }
@@ -175,9 +118,6 @@ void ARTSPlayerController::Pistol()
 
 void ARTSPlayerController::Aid()
 {
-	bSomeoneToStab = false;
-	bSomeoneToShoot = false;
-
 	if (!HUDPtr) { return; }
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
@@ -186,100 +126,22 @@ void ARTSPlayerController::Aid()
 
 		FHitResult Hit;
 
-		GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit);
-		if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>() || bSomeoneToAid)
+		if (GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, false, Hit))
 		{
-			if (this->WasInputKeyJustPressed(FKey(FName("C"))))
+			for (auto Actor : SelectedActors)
 			{
-				Target = Hit.GetActor();
-				AidState = EAidState::Cleansing;
-			}
-
-			if (this->WasInputKeyJustPressed(FKey(FName("H"))))
-			{
-				Target = Hit.GetActor();
-				AidState = EAidState::Healing;
-			}
-			
-			//Only do it if Target is bleeding or is injured
-			if (Cast<ARTSprojCharacter>(Target)->IsCharacterBleeding()
-				|| Cast<ARTSprojCharacter>(Target)->IsCharacterInjured())
-			{
-				for (auto Actor : SelectedActors)
+				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
 				{
-					float Distance = GetDistance(Target->GetActorLocation(), Actor->GetActorLocation());
-
-					if (Distance > 150)
+					if (this->WasInputKeyJustPressed(FKey(FName("H"))))
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Too far for aiding target"));
-						bSomeoneToAid = true;
-
-						UAIBlueprintHelperLibrary::SimpleMoveToActor(Actor->GetController(), Target);
+						Cast<ARTSAIController>(Actor->GetController())->Aid(Hit, EUnitState::Healing);
 					}
-					else
+					else if (this->WasInputKeyJustPressed(FKey(FName("C"))))
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Aid"));
-
-						//Rotation of a actor's body (in case of player is in range so he doesnt have to move around to the target location)
-						//Rotation of target's body (faces actor that's aiding him)
-						//Only do it if the target and actor isn't the same character
-						if (!Target->GetName().Equals(Actor->GetName()))
-						{
-							FRotator ActorBodyRotation = UKismetMathLibrary::FindLookAtRotation(Actor->GetActorLocation(), Target->GetActorLocation());
-							Actor->SetActorRotation(ActorBodyRotation);
-
-							FRotator TargetBodyRotation = UKismetMathLibrary::FindLookAtRotation(Target->GetActorLocation(), Actor->GetActorLocation());
-							Target->SetActorRotation(TargetBodyRotation);
-
-							//As character that aids isn't the target there's no penalty for Aiding
-							SelfAidTime = 0.f;
-						}
-						//If target equals character, it takes him longer to self-heal or self-cleanse
-						else
-						{
-							//Penalty for self-heal or self-cleanse
-							SelfAidTime = 2.f;
-						}
-
-						bSomeoneToAid = false;
-						PerformAid();
+						Cast<ARTSAIController>(Actor->GetController())->Aid(Hit, EUnitState::Cleansing);
 					}
 				}
 			}
 		}
 	}
-}
-
-void ARTSPlayerController::PerformAid()
-{
-	if (AidState == EAidState::Cleansing)
-	{
-		GetWorld()->GetTimerManager().SetTimer(CleansingTimerHandle, this, &ARTSPlayerController::Cleansing, CleansingTime + SelfAidTime, false);
-	}
-	if (AidState == EAidState::Healing)
-	{
-		GetWorld()->GetTimerManager().SetTimer(HealingTimerHandle, this, &ARTSPlayerController::Healing, HealingTime + SelfAidTime, false);
-	}
-}
-
-void ARTSPlayerController::Cleansing()
-{
-	if (Target)
-	{
-		Cast<ARTSprojCharacter>(Target)->StopBleeding();
-		UE_LOG(LogTemp, Warning, TEXT("Target: %s cleansed"), *(Target->GetName()));
-	}
-	GetWorld()->GetTimerManager().ClearTimer(CleansingTimerHandle);
-	Target = nullptr;
-}
-
-void ARTSPlayerController::Healing()
-{
-	if (Target)
-	{
-		Cast<ARTSprojCharacter>(Target)->AddHealth(20.f);
-		UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSprojCharacter>(Target)->GetHealth());
-	}
-	GetWorld()->GetTimerManager().ClearTimer(HealingTimerHandle);
-	Target = nullptr;
 }

@@ -19,8 +19,6 @@ public:
 
 	virtual void BeginPlay() override;
 
-	virtual void Tick(float DeltaTime) override;
-
 	void SetupInputComponent() override;
 
 	class ARTSHud* HUDPtr;
@@ -38,39 +36,6 @@ protected:
 
 	void Aid();
 
-	void TestInput();
-
 private:
-	bool bSomeoneToStab;
-	bool bSomeoneToShoot;
-	bool bSomeoneToAid;
-
-	AActor* Target;
-
-	float GetDistance(FVector A, FVector B);
-
-	void PerformAid();
-
-	UFUNCTION()
-		void Cleansing();
-
-	UFUNCTION()
-		void Healing();
-
-	FTimerHandle CleansingTimerHandle;
-	FTimerHandle HealingTimerHandle;
-
-	enum class EAidState : uint8
-	{
-		Cleansing,
-		Healing
-	};
-
-	EAidState AidState;
-
-	float CleansingTime;
-	float HealingTime;
-	float SelfAidTime;
-
 	class ARTSprojCharacter* ControlledUnit;
 };
