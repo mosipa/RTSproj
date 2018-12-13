@@ -41,6 +41,7 @@ private:
 	float GetDistance(FVector A, FVector B);
 
 	FTimerHandle AttackTimerHandle;
+	FTimerHandle GettingCloserTimerHandle;
 	FTimerHandle AidTimerHandle;
 
 	void PrepareAttack();
@@ -52,9 +53,12 @@ private:
 	void PrepareAid();
 	
 	UFUNCTION()
+		void GetCloserForAid();
+
+	UFUNCTION()
 		void PerformAid();
 
-	EUnitState InteriorUnitState;
+	EUnitState InteralUnitState;
 
 	float AidTime;
 	float SelfAidPenalty;
