@@ -17,6 +17,49 @@ void ARTSPlayerController::BeginPlay()
 	HUDPtr = Cast<ARTSHud>(GetHUD());
 }
 
+void ARTSPlayerController::Tick(float DeltaTime)
+{
+	//Update position of camera every second
+	MoveCamera();
+}
+
+void ARTSPlayerController::MoveCamera()
+{
+	if (!HUDPtr) { return; }
+
+	//Current position of cursor
+	FVector2D MousePosition = HUDPtr->GetMousePosition2D();
+
+	//Get size of viewport
+	int32 OutViewportSizeX; int32 OutViewportSizeY;
+	GetViewportSize(OutViewportSizeX, OutViewportSizeY);
+
+	//Get our pawn (camera) current location
+	FVector ActorLocation = this->GetPawn()->GetActorLocation();
+
+	//If cursor is on the edge, slowly move camera in that direction
+	if (MousePosition.X < (float)OutViewportSizeX * 0.05)
+	{
+		ActorLocation.Y -= 12.f;
+		this->GetPawn()->SetActorLocation(ActorLocation);
+	}
+	if (MousePosition.X > (float)OutViewportSizeX * 0.95)
+	{
+		ActorLocation.Y += 12.f;
+		this->GetPawn()->SetActorLocation(ActorLocation);
+	}
+	if (MousePosition.Y < (float)OutViewportSizeY * 0.05)
+	{
+		ActorLocation.X += 12.f;
+		this->GetPawn()->SetActorLocation(ActorLocation);
+	}
+	if (MousePosition.Y > (float)OutViewportSizeY * 0.95)
+	{
+		ActorLocation.X -= 12.f;
+		this->GetPawn()->SetActorLocation(ActorLocation);
+	}
+}
+
 void ARTSPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();

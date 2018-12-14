@@ -19,6 +19,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 	void SetupInputComponent() override;
 
 	class ARTSHud* HUDPtr;
@@ -38,4 +40,6 @@ protected:
 
 private:
 	class ARTSprojCharacter* ControlledUnit;
+
+	void MoveCamera();
 };
