@@ -1,7 +1,7 @@
 // MOsipa 2018
 
 #include "RTSAIController.h"
-#include "RTSprojCharacter.h"
+#include "RTSCharacter.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,7 +34,7 @@ void ARTSAIController::Knife(FHitResult Hit)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 
-	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
 		Target = Hit.GetActor();
 
@@ -42,7 +42,7 @@ void ARTSAIController::Knife(FHitResult Hit)
 		//you're not the target
 		//and your target isnt dead already
 		if (Target && !(this->GetPawn()->GetName().Equals(Target->GetName()))
-			&& !Cast<ARTSprojCharacter>(Target)->IsCharacterDead())
+			&& !Cast<ARTSCharacter>(Target)->IsCharacterDead())
 		{
 			PrepareAttack();
 		}
@@ -82,7 +82,7 @@ void ARTSAIController::FirePistol(FHitResult Hit)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 
-	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
 		Target = Hit.GetActor();
 
@@ -90,7 +90,7 @@ void ARTSAIController::FirePistol(FHitResult Hit)
 		//you're not the target
 		//and your target isnt dead already
 		if (Target && !(this->GetPawn()->GetName().Equals(Target->GetName()))
-			&& !Cast<ARTSprojCharacter>(Target)->IsCharacterDead())
+			&& !Cast<ARTSCharacter>(Target)->IsCharacterDead())
 		{
 			PrepareToFire();
 		}
@@ -164,7 +164,7 @@ void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle); 
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 
-	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSprojCharacter>())
+	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
 		Target = Hit.GetActor();
 		if (UnitState == EUnitState::Cleansing)
@@ -180,11 +180,11 @@ void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
 
 		//There's character to heal
 		//and he's not dead
-		if (Target && !Cast<ARTSprojCharacter>(Target)->IsCharacterDead())
+		if (Target && !Cast<ARTSCharacter>(Target)->IsCharacterDead())
 		{
 			//Only do it if Target is bleeding or is injured
-			if (Cast<ARTSprojCharacter>(Target)->IsCharacterBleeding()
-				|| Cast<ARTSprojCharacter>(Target)->IsCharacterInjured())
+			if (Cast<ARTSCharacter>(Target)->IsCharacterBleeding()
+				|| Cast<ARTSCharacter>(Target)->IsCharacterInjured())
 			{
 				PrepareAid();
 			}
@@ -242,12 +242,12 @@ void ARTSAIController::PerformAid()
 {
 	if (InteralUnitState == EUnitState::Cleansing)
 	{
-		Cast<ARTSprojCharacter>(Target)->StopBleeding();
+		Cast<ARTSCharacter>(Target)->StopBleeding();
 	}
 	else if (InteralUnitState == EUnitState::Healing)
 	{
-		Cast<ARTSprojCharacter>(Target)->AddHealth(20.f);
-		UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSprojCharacter>(Target)->GetHealth());
+		Cast<ARTSCharacter>(Target)->AddHealth(20.f);
+		UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSCharacter>(Target)->GetHealth());
 	}
 
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);

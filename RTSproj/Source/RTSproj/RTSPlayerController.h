@@ -39,7 +39,5 @@ protected:
 	void Aid();
 
 private:
-	class ARTSprojCharacter* ControlledUnit;
-
 	void MoveCamera();
 };

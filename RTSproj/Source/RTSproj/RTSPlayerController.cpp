@@ -2,7 +2,7 @@
 
 #include "RTSPlayerController.h"
 #include "RTSHud.h"
-#include "RTSprojCharacter.h"
+#include "RTSCharacter.h"
 #include "Engine/World.h"
 #include "RTSAIController.h"
 
@@ -94,7 +94,7 @@ void ARTSPlayerController::Move()
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Moving"));
-		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+		TArray<ARTSCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;
 		GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
@@ -103,7 +103,7 @@ void ARTSPlayerController::Move()
 		for (auto Actor : SelectedActors)
 		{
 			//If character was selected but died in process dont give him an order
-			if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+			if (!Cast<ARTSCharacter>(Actor)->IsCharacterDead())
 			{
 				Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
 			}
@@ -117,7 +117,7 @@ void ARTSPlayerController::Knife()
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
-		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+		TArray<ARTSCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;
 
@@ -126,7 +126,7 @@ void ARTSPlayerController::Knife()
 			for (auto Actor : SelectedActors)
 			{
 				//If character was selected but died in process dont give him an order
-				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+				if (!Cast<ARTSCharacter>(Actor)->IsCharacterDead())
 				{
 					Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
 				}
@@ -141,7 +141,7 @@ void ARTSPlayerController::Pistol()
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
-		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+		TArray<ARTSCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;
 
@@ -150,7 +150,7 @@ void ARTSPlayerController::Pistol()
 			for (auto Actor : SelectedActors)
 			{
 				//If character was selected but died in process dont give him an order
-				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+				if (!Cast<ARTSCharacter>(Actor)->IsCharacterDead())
 				{
 					Cast<ARTSAIController>(Actor->GetController())->FirePistol(Hit);
 				}
@@ -165,7 +165,7 @@ void ARTSPlayerController::Aid()
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
-		TArray<ARTSprojCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
+		TArray<ARTSCharacter*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;
 
@@ -173,7 +173,7 @@ void ARTSPlayerController::Aid()
 		{
 			for (auto Actor : SelectedActors)
 			{
-				if (!Cast<ARTSprojCharacter>(Actor)->IsCharacterDead())
+				if (!Cast<ARTSCharacter>(Actor)->IsCharacterDead())
 				{
 					if (this->WasInputKeyJustPressed(FKey(FName("H"))))
 					{
