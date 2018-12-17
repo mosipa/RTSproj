@@ -2,7 +2,7 @@
 
 #include "RTSHud.h"
 #include "GameFramework/PlayerController.h"
-#include "RTSCharacter.h"
+#include "RTSPlayerUnit.h"
 
 void ARTSHud::DrawHUD()
 {
@@ -23,8 +23,8 @@ void ARTSHud::DrawHUD()
 		DrawRect(FLinearColor(0.f, 0.f, 1.f, 0.10f), InitialPoint.X, InitialPoint.Y, 
 			CurrentPoint.X - InitialPoint.X, CurrentPoint.Y - InitialPoint.Y);
 
-		TArray<class ARTSCharacter*> ActorsToSelect;
-		GetActorsInSelectionRectangle<ARTSCharacter>(InitialPoint, CurrentPoint, ActorsToSelect, false, false);
+		TArray<class ARTSPlayerUnit*> ActorsToSelect;
+		GetActorsInSelectionRectangle<ARTSPlayerUnit>(InitialPoint, CurrentPoint, ActorsToSelect, false, false);
 
 		for(auto Character : ActorsToSelect)
 		{

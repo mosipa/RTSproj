@@ -24,9 +24,6 @@ public:
 	/** Returns CursorToWorld subobject **/
 	FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
 
-	void Select();
-	void Unselect();
-
 	float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser);
 
 	FORCEINLINE float GetHealth() const { return Health; }
@@ -44,6 +41,10 @@ public:
 
 	void DestroyCharacter();
 	void StopBleeding();
+protected:
+	/** A decal that projects to the cursor location. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		class UDecalComponent* CursorToWorld;
 
 private:
 	/** Top down camera */
@@ -52,11 +53,7 @@ private:
 
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	/** A decal that projects to the cursor location. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UDecalComponent* CursorToWorld;
+	class USpringArmComponent* CameraBoom;	
 
 	float Health;
 	bool bIsDead;

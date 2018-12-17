@@ -14,7 +14,7 @@ class RTSPROJ_API ARTSPlayerUnit : public ARTSCharacter
 {
 	GENERATED_BODY()
 	
-	
-	
-	
+public:
+	void Select();
+	void Unselect();
 };

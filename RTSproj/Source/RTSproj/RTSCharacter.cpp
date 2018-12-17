@@ -95,16 +95,6 @@ void ARTSCharacter::Tick(float DeltaSeconds)
 	}
 }
 
-void ARTSCharacter::Select()
-{
-	CursorToWorld->SetVisibility(true);
-}
-
-void ARTSCharacter::Unselect()
-{
-	CursorToWorld->SetVisibility(false);
-}
-
 float ARTSCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser)
 {
 	if (bIsDead) { return 0.f; }

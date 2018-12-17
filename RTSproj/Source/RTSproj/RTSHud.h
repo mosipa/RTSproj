@@ -15,7 +15,7 @@ class RTSPROJ_API ARTSHud : public AHUD
 	GENERATED_BODY()
 	
 private:
-	TArray<class ARTSCharacter*> SelectedActors;
+	TArray<class ARTSPlayerUnit*> SelectedActors;
 
 public:
 	FVector2D InitialPoint;
@@ -28,6 +28,6 @@ public:
 
 	bool bStartSelecting = false;
 
-	FORCEINLINE TArray<class ARTSCharacter*> GetSelectedActors() const {return SelectedActors;}
+	FORCEINLINE TArray<class ARTSPlayerUnit*> GetSelectedActors() const {return SelectedActors;}
 
 };
