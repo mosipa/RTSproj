@@ -4,6 +4,7 @@
 
 void AEnemyAIController::BeginPlay()
 {
+	Super::BeginPlay();
 	auto AIPawnName = this->GetPawn()->GetName();
 	UE_LOG(LogTemp, Warning, TEXT("%s has %s"), *(AIPawnName), *(this->GetName()));
 }
