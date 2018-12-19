@@ -49,7 +49,7 @@ AEnemyAIController::AEnemyAIController()
 
 	AIPerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
 
-	SetGenericTeamId(FGenericTeamId(1));
+	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnTargetPerceptionUpdated);
 }
 
 void AEnemyAIController::Possess(APawn* Pawn)
