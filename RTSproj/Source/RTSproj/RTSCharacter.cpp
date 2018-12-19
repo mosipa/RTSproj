@@ -99,10 +99,7 @@ float ARTSCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const & 
 {
 	if (bIsDead) { return 0.f; }
 
-	UE_LOG(LogTemp, Warning, TEXT("Character: %s got hit and lose %f"), *(this->GetName()), DamageAmount);
-	
 	SubtractHealth(DamageAmount);
-	
 	return DamageAmount;
 }
 
