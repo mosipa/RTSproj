@@ -8,6 +8,8 @@
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Int.h"
 #include "AIModule/Classes/BehaviorTree/BehaviorTree.h"
 #include "UObject/ConstructorHelpers.h"
+#include "AIModule/Classes/Perception/AIPerceptionComponent.h"
+#include "AIModule/Classes/Perception/AISenseConfig_Sight.h"
 
 AEnemyAIController::AEnemyAIController()
 {
@@ -25,6 +27,29 @@ AEnemyAIController::AEnemyAIController()
 		BehaviorTree = BTObject.Object;
 		BehaviorTree->BlackboardAsset = BlackboardAsset;
 	}	
+
+	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
+	if (AIPerceptionComponent)
+	{
+		SetPerceptionComponent(*AIPerceptionComponent);
+	}
+
+	Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightSense"));
+	if (Sight)
+	{
+		Sight->SightRadius = 500;
+		Sight->LoseSightRadius = 600;
+		Sight->PeripheralVisionAngleDegrees = 180.0f;
+		Sight->DetectionByAffiliation.bDetectEnemies = true;
+		Sight->DetectionByAffiliation.bDetectNeutrals = true;
+		Sight->DetectionByAffiliation.bDetectFriendlies = true;
+
+		AIPerceptionComponent->ConfigureSense(*Sight);
+	}
+
+	AIPerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
+
+	SetGenericTeamId(FGenericTeamId(1));
 }
 
 void AEnemyAIController::Possess(APawn* Pawn)
@@ -49,4 +74,18 @@ void AEnemyAIController::BeginPlay()
 	this->RunBehaviorTree(BehaviorTree);
 }
 
-
+void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimulus Stimulus)
+{
+	if (Stimulus.IsActive())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("IsActive"));
+		if(Stimulus.WasSuccessfullySensed())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WasSuccessfullySensed"));
+		}
+	}
+	if (SensedActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Sensed Actor: %s"), *(SensedActor->GetName()));
+	}
+}
