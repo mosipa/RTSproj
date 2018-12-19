@@ -13,9 +13,16 @@ UCLASS()
 class RTSPROJ_API AEnemyAIController : public AAIController
 {
 	GENERATED_BODY()
-	
+
+	AEnemyAIController();
+
 public:
 	virtual void BeginPlay() override;
 	
-	
+private:
+	class UBlackboardComponent* BlackboardComponent;
+	class UBlackboardData* BlackboardAsset;
+	class UBehaviorTree* BehaviorTree;
+
+	virtual void Possess(APawn* Pawn) override;
 };
