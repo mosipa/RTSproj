@@ -6,10 +6,12 @@
 #include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Int.h"
+#include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "AIModule/Classes/BehaviorTree/BehaviorTree.h"
 #include "UObject/ConstructorHelpers.h"
 #include "AIModule/Classes/Perception/AIPerceptionComponent.h"
 #include "AIModule/Classes/Perception/AISenseConfig_Sight.h"
+#include "RTSPlayerUnit.h"
 
 AEnemyAIController::AEnemyAIController()
 {
@@ -17,6 +19,7 @@ AEnemyAIController::AEnemyAIController()
 
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("NextWaypoint"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Int>(FName("IndexKey"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("EnemyKey"));
 	
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -39,7 +42,7 @@ AEnemyAIController::AEnemyAIController()
 	{
 		Sight->SightRadius = 500;
 		Sight->LoseSightRadius = 600;
-		Sight->PeripheralVisionAngleDegrees = 180.0f;
+		Sight->PeripheralVisionAngleDegrees = 114.f; //Actual human peripheral vision angle 
 		Sight->DetectionByAffiliation.bDetectEnemies = true;
 		Sight->DetectionByAffiliation.bDetectNeutrals = true;
 		Sight->DetectionByAffiliation.bDetectFriendlies = true;
@@ -76,16 +79,18 @@ void AEnemyAIController::BeginPlay()
 
 void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimulus Stimulus)
 {
-	if (Stimulus.IsActive())
+	if (Stimulus.WasSuccessfullySensed())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("IsActive"));
-		if(Stimulus.WasSuccessfullySensed())
+		//If Enemy was spotted
+		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("WasSuccessfullySensed"));
+			UE_LOG(LogTemp, Warning, TEXT("PlayerUnit spotted at %s"), *(SensedActor->GetActorLocation().ToString()));
+			this->BlackboardComponent->SetValueAsObject("EnemyKey", SensedActor);
 		}
 	}
-	if (SensedActor)
+	//If noone is in sight radius
+	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Sensed Actor: %s"), *(SensedActor->GetName()));
+		this->BlackboardComponent->ClearValue("EnemyKey");
 	}
 }

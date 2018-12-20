@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "ChangeWaypoint.generated.h"
+#include "MakeArrest.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RTSPROJ_API UChangeWaypoint : public UBTTaskNode
+class RTSPROJ_API UMakeArrest : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
@@ -18,13 +18,6 @@ public:
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory) override;
 
 private:
-	TArray<AActor*> PatrolPoints;
-
 	UBlackboardComponent* Blackboard;
-
-	int32 Index;
-
-	void GetPatrolPoints(UBehaviorTreeComponent& OwnerComp);
-	void SetNextWaypoint();
-	void SetNextIndex();
+	APawn* Pawn;
 };
