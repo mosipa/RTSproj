@@ -20,6 +20,7 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("NextWaypoint"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Int>(FName("IndexKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("EnemyKey"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("EnemyLocation"));
 	
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -86,6 +87,7 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PlayerUnit spotted at %s"), *(SensedActor->GetActorLocation().ToString()));
 			this->BlackboardComponent->SetValueAsObject("EnemyKey", SensedActor);
+			this->BlackboardComponent->SetValueAsVector("EnemyLocation", SensedActor->GetActorLocation());
 		}
 	}
 	//If noone is in sight radius

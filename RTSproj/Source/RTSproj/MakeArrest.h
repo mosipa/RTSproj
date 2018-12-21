@@ -18,6 +18,13 @@ public:
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory) override;
 
 private:
-	UBlackboardComponent* Blackboard;
+	UBlackboardComponent* BlackboardComponent;
 	APawn* Pawn;
+
+	bool bEnemyPrevLocationSet = false;
+	bool bEnemyMoved = false;
+	FVector EnemyPrevLocation;
+
+	bool IsEnemyPrevLocationSet();
+	void SetEnemyPrevLocation(UBlackboardComponent* Blackboard);
 };
