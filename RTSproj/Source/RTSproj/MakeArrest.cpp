@@ -5,7 +5,8 @@
 #include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
-
+#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
+#include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 
 EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -19,12 +20,9 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	{
 		SetEnemyPrevLocation(BlackboardComponent);
 	}
-	
-	if (EnemyPrevLocation.Equals(BlackboardComponent->GetValueAsVector("EnemyLocation")))
-	{
-		bEnemyMoved = false;
-	}
-	else
+
+	//TODO fix - it triggers even if enemy unit is under arrest and is going to the jail
+	if (!(EnemyPrevLocation.Equals(BlackboardComponent->GetValueAsVector("EnemyLocation"))))
 	{
 		bEnemyMoved = true;
 	}
@@ -33,14 +31,27 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
 	Pawn->SetActorRotation(BodyRotation);
 
-	//TODO add logic (follow/shoot enemy)
+	//Enemy tries to run away
 	if (bEnemyMoved)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ENEMY MOVES"));
+		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
+		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
+		BlackboardComponent->SetValueAsVector("EnemyLocation", EnemyPrevLocation);
+		BlackboardComponent->SetValueAsBool("EnemyOnMove", true);
 	}
+	//Enemy doesn't move so get closer
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ENEMY STAYS"));
+		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
+
+		//If close enough, make arrest - put him in prison
+		if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
+		{
+			Target->SetActorRotation(Pawn->GetActorRotation());
+			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
+		}
 	}
 
 	//Update current enemy position
@@ -58,4 +69,11 @@ void UMakeArrest::SetEnemyPrevLocation(UBlackboardComponent* Blackboard)
 bool UMakeArrest::IsEnemyPrevLocationSet()
 {
 	return bEnemyPrevLocationSet;
+}
+
+float UMakeArrest::GetDistance(FVector A, FVector B)
+{
+	FVector VectorLength = A - B;
+	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
+	return Distance;
 }

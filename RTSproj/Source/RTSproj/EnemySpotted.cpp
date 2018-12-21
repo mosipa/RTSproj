@@ -16,7 +16,7 @@ EBTNodeResult::Type UEnemySpotted::ExecuteTask(UBehaviorTreeComponent & OwnerCom
 	{
 		//Stops AI
 		Pawn->GetMovementComponent()->StopMovementImmediately();
-
+		
 		auto Target = Cast<AActor>(Blackboard->GetValueAsObject("EnemyKey"));
 
 		//Rotate AI to face Enemy 

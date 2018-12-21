@@ -7,6 +7,7 @@
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Int.h"
 #include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
 #include "AIModule/Classes/BehaviorTree/BehaviorTree.h"
 #include "UObject/ConstructorHelpers.h"
 #include "AIModule/Classes/Perception/AIPerceptionComponent.h"
@@ -21,6 +22,7 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Int>(FName("IndexKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("EnemyKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("EnemyLocation"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("EnemyOnMove"));
 	
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -88,11 +90,14 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 			UE_LOG(LogTemp, Warning, TEXT("PlayerUnit spotted at %s"), *(SensedActor->GetActorLocation().ToString()));
 			this->BlackboardComponent->SetValueAsObject("EnemyKey", SensedActor);
 			this->BlackboardComponent->SetValueAsVector("EnemyLocation", SensedActor->GetActorLocation());
+			this->BlackboardComponent->SetValueAsBool("EnemyOnMove", false);
 		}
 	}
 	//If noone is in sight radius
 	else
 	{
 		this->BlackboardComponent->ClearValue("EnemyKey");
+		this->BlackboardComponent->ClearValue("EnemyLocation");
+		this->BlackboardComponent->ClearValue("EnemyOnMove");
 	}
 }
