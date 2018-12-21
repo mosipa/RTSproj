@@ -7,22 +7,26 @@
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
+#include "Engine/World.h"
 
 EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
 	BlackboardComponent = OwnerComp.GetBlackboardComponent();
-	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
 
-	auto Target = Cast<AActor>(BlackboardComponent->GetValueAsObject("EnemyKey"));
+	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
+	if (!Pawn) { return EBTNodeResult::Aborted; }
+
+	Target = Cast<AActor>(BlackboardComponent->GetValueAsObject("EnemyKey"));
+	if (!Target) { return EBTNodeResult::Aborted; }
 
 	//Get target location from Blackboard and set it for this moment (only do it once per arrest)
-	if (!IsEnemyPrevLocationSet())
+	if (!bEnemyPrevLocationSet)
 	{
 		SetEnemyPrevLocation(BlackboardComponent);
 	}
 
 	//TODO fix - it triggers even if enemy unit is under arrest and is going to the jail
-	if (!(EnemyPrevLocation.Equals(BlackboardComponent->GetValueAsVector("EnemyLocation"))))
+	if (!bArrested && !(EnemyPrevLocation.Equals(BlackboardComponent->GetValueAsVector("EnemyLocation"))))
 	{
 		bEnemyMoved = true;
 	}
@@ -38,6 +42,9 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		BlackboardComponent->SetValueAsVector("EnemyLocation", EnemyPrevLocation);
 		BlackboardComponent->SetValueAsBool("EnemyOnMove", true);
+		bArrested = false; 
+		bEnemyPrevLocationSet = false;
+		bEnemyMoved = false;
 	}
 	//Enemy doesn't move so get closer
 	else
@@ -45,9 +52,13 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
 
+		float Distance = GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
+		float RequiredTime = Distance / Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed;
+
 		//If close enough, make arrest - put him in prison
 		if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
 		{
+			bArrested = true;
 			Target->SetActorRotation(Pawn->GetActorRotation());
 			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
@@ -64,11 +75,6 @@ void UMakeArrest::SetEnemyPrevLocation(UBlackboardComponent* Blackboard)
 {
 	bEnemyPrevLocationSet = true;
 	EnemyPrevLocation = Blackboard->GetValueAsVector("EnemyLocation");
-}
-
-bool UMakeArrest::IsEnemyPrevLocationSet()
-{
-	return bEnemyPrevLocationSet;
 }
 
 float UMakeArrest::GetDistance(FVector A, FVector B)
