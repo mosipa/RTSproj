@@ -6,6 +6,7 @@
 #include "RTSPlayerUnit.h"
 #include "Engine/World.h"
 #include "RTSAIController.h"
+#include "Engine/Classes/Camera/CameraComponent.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -37,7 +38,7 @@ void ARTSPlayerController::MoveCamera()
 
 	//Get our pawn (camera) current location
 	FVector ActorLocation = this->GetPawn()->GetActorLocation();
-
+	
 	//If cursor is on the edge, slowly move camera in that direction
 	if (MousePosition.X < (float)OutViewportSizeX * 0.05)
 	{
@@ -66,12 +67,29 @@ void ARTSPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 	if (!InputComponent) { return; }
 
+	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &ARTSPlayerController::ZoomIn);
+	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &ARTSPlayerController::ZoomOut);
+
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
+}
+
+void ARTSPlayerController::ZoomIn()
+{
+	FVector CameraLocation = this->GetPawn()->GetActorLocation();
+	CameraLocation.Z -= 20.f;
+	this->GetPawn()->SetActorLocation(CameraLocation);
+}
+
+void ARTSPlayerController::ZoomOut()
+{
+	FVector CameraLocation = this->GetPawn()->GetActorLocation();
+	CameraLocation.Z += 20.f;
+	this->GetPawn()->SetActorLocation(CameraLocation);
 }
 
 void ARTSPlayerController::Select()

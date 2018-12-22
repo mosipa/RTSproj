@@ -38,6 +38,10 @@ protected:
 
 	void Aid();
 
+	void ZoomIn();
+
+	void ZoomOut();
+
 private:
 	void MoveCamera();
 };
