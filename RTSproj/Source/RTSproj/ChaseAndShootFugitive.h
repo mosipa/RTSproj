@@ -20,4 +20,7 @@ public:
 private:
 	UBlackboardComponent* BlackboardComponent;
 	APawn* Pawn;
+
+	//TODO create class with math stuff or get one from UE4 libraries
+	float GetDistance(FVector A, FVector B);
 };

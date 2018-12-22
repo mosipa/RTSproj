@@ -85,7 +85,9 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		//If Enemy was spotted
-		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
+		//And Enemy isn't dead already
+		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>()
+			&& !(Cast<ARTSCharacter>(SensedActor)->IsCharacterDead()))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PlayerUnit spotted at %s"), *(SensedActor->GetActorLocation().ToString()));
 			this->BlackboardComponent->SetValueAsObject("EnemyKey", SensedActor);
