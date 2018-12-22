@@ -18,8 +18,8 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
 	if (!Pawn) { return EBTNodeResult::Aborted; }
 	
-	FVector TargetLocation = BlackboardComponent->GetValueAsVector("EnemyLocation");
-	auto Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("EnemyKey"));
+	FVector TargetLocation = BlackboardComponent->GetValueAsVector("PlayerUnitLocation");
+	auto Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
 	float Distance = GetDistance(Pawn->GetActorLocation(), TargetLocation);
 
 	//Start chasing fugitive
@@ -47,9 +47,9 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	if (Target->IsCharacterDead())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Fugitive: %s died"), *(Target->GetName()));
-		BlackboardComponent->ClearValue("EnemyKey");
-		BlackboardComponent->ClearValue("EnemyLocation");
-		BlackboardComponent->ClearValue("EnemyOnMove");
+		BlackboardComponent->ClearValue("PlayerUnitKey");
+		BlackboardComponent->ClearValue("PlayerUnitLocation");
+		BlackboardComponent->ClearValue("PlayerUnitOnMove");
 	}
 
 	return EBTNodeResult::Succeeded;

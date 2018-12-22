@@ -1,13 +1,13 @@
 // MOsipa 2018
 
-#include "EnemySpotted.h"
+#include "PlayerUnitSpotted.h"
 #include "EnemyAIController.h"
 #include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 
 
-EBTNodeResult::Type UEnemySpotted::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
+EBTNodeResult::Type UPlayerUnitSpotted::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
 	Blackboard = OwnerComp.GetBlackboardComponent();
 	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
@@ -17,13 +17,11 @@ EBTNodeResult::Type UEnemySpotted::ExecuteTask(UBehaviorTreeComponent & OwnerCom
 		//Stops AI
 		Pawn->GetMovementComponent()->StopMovementImmediately();
 		
-		auto Target = Cast<AActor>(Blackboard->GetValueAsObject("EnemyKey"));
+		auto Target = Cast<AActor>(Blackboard->GetValueAsObject("PlayerUnitKey"));
 
-		//Rotate AI to face Enemy 
+		//Rotate AI to face player unit 
 		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
 		Pawn->SetActorRotation(BodyRotation);
-
-		UE_LOG(LogTemp, Warning, TEXT("Spotted: %s"), *(Target->GetName()));
 
 		return EBTNodeResult::Succeeded;
 	}

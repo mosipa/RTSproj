@@ -14,46 +14,45 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	BlackboardComponent = OwnerComp.GetBlackboardComponent();
 
 	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
-	if (!Pawn) { return EBTNodeResult::Aborted; }
+	if (!Pawn) { return EBTNodeResult::Failed; }
 
-	Target = Cast<AActor>(BlackboardComponent->GetValueAsObject("EnemyKey"));
-	if (!Target) { return EBTNodeResult::Aborted; }
+	Target = Cast<AActor>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
+	if (!Target) { return EBTNodeResult::Failed; }
 
 	//Get target location from Blackboard and set it for this moment (only do it once per arrest)
-	if (!bEnemyPrevLocationSet)
+	if (!bPlayerUnitPrevLocationSet)
 	{
-		SetEnemyPrevLocation(BlackboardComponent);
+		SetPlayerUnitPrevLocation(BlackboardComponent);
 	}
 
-	//TODO fix - it triggers even if enemy unit is under arrest and is going to the jail
-	if (!bArrested && !(EnemyPrevLocation.Equals(BlackboardComponent->GetValueAsVector("EnemyLocation"))))
+	//TODO doesn't work when enemy AI tries to arrest 2 or more player units
+	if (!bArrested && !(PlayerUnitPrevLocation.Equals(BlackboardComponent->GetValueAsVector("PlayerUnitLocation"))))
 	{
-		bEnemyMoved = true;
+		bPlayerUnitMoved = true;
 	}
 
-	//Rotate AI to face Enemy 
+	//Rotate AI to face player unit 
 	FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
 	Pawn->SetActorRotation(BodyRotation);
 
-	//Enemy tries to run away
-	if (bEnemyMoved)
+	//Player unit tries to run away
+	if (bPlayerUnitMoved)
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-		BlackboardComponent->SetValueAsVector("EnemyLocation", EnemyPrevLocation);
-		BlackboardComponent->SetValueAsBool("EnemyOnMove", true);
+		BlackboardComponent->SetValueAsVector("PlayerUnitLocation", PlayerUnitPrevLocation);
+		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
 		bArrested = false; 
-		bEnemyPrevLocationSet = false;
-		bEnemyMoved = false;
+		bPlayerUnitPrevLocationSet = false;
+		bPlayerUnitMoved = false;
 	}
-	//Enemy doesn't move so get closer
+	//Player unit doesn't move so get closer
 	else
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
 
 		float Distance = GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
-		float RequiredTime = Distance / Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed;
 
 		//If close enough, make arrest - put him in prison
 		if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
@@ -65,16 +64,25 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		}
 	}
 
-	//Update current enemy position
-	EnemyPrevLocation = Target->GetActorLocation();
+	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
+
+	if (DistanceToPrison <= 100.f)
+	{
+		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
+		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
+		return EBTNodeResult::Succeeded;
+	}
+
+	//Update current player unit position
+	PlayerUnitPrevLocation = Target->GetActorLocation();
 
 	return EBTNodeResult::Succeeded;
 }
 
-void UMakeArrest::SetEnemyPrevLocation(UBlackboardComponent* Blackboard)
+void UMakeArrest::SetPlayerUnitPrevLocation(UBlackboardComponent* Blackboard)
 {
-	bEnemyPrevLocationSet = true;
-	EnemyPrevLocation = Blackboard->GetValueAsVector("EnemyLocation");
+	bPlayerUnitPrevLocationSet = true;
+	PlayerUnitPrevLocation = Blackboard->GetValueAsVector("PlayerUnitLocation");
 }
 
 float UMakeArrest::GetDistance(FVector A, FVector B)

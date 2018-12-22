@@ -20,9 +20,9 @@ AEnemyAIController::AEnemyAIController()
 
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("NextWaypoint"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Int>(FName("IndexKey"));
-	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("EnemyKey"));
-	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("EnemyLocation"));
-	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("EnemyOnMove"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("PlayerUnitKey"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("PlayerUnitLocation"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerUnitOnMove"));
 	
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -84,22 +84,22 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		//If Enemy was spotted
-		//And Enemy isn't dead already
+		//If player unit was spotted
+		//And player unit isn't dead already
 		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>()
 			&& !(Cast<ARTSCharacter>(SensedActor)->IsCharacterDead()))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PlayerUnit spotted at %s"), *(SensedActor->GetActorLocation().ToString()));
-			this->BlackboardComponent->SetValueAsObject("EnemyKey", SensedActor);
-			this->BlackboardComponent->SetValueAsVector("EnemyLocation", SensedActor->GetActorLocation());
-			this->BlackboardComponent->SetValueAsBool("EnemyOnMove", false);
+			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
+			this->BlackboardComponent->SetValueAsVector("PlayerUnitLocation", SensedActor->GetActorLocation());
+			this->BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", false);
 		}
 	}
 	//If noone is in sight radius
 	else
 	{
-		this->BlackboardComponent->ClearValue("EnemyKey");
-		this->BlackboardComponent->ClearValue("EnemyLocation");
-		this->BlackboardComponent->ClearValue("EnemyOnMove");
+		this->BlackboardComponent->ClearValue("PlayerUnitKey");
+		this->BlackboardComponent->ClearValue("PlayerUnitLocation");
+		this->BlackboardComponent->ClearValue("PlayerUnitOnMove");
 	}
 }

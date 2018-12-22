@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "EnemySpotted.generated.h"
+#include "PlayerUnitSpotted.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RTSPROJ_API UEnemySpotted : public UBTTaskNode
+class RTSPROJ_API UPlayerUnitSpotted : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
