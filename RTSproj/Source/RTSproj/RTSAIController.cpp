@@ -10,6 +10,11 @@
 #include "Engine/World.h"
 #include "Projectile.h"
 
+ARTSAIController::ARTSAIController()
+{
+	bUnitBusy = false;
+}
+
 float ARTSAIController::GetDistance(FVector A, FVector B)
 {
 	FVector VectorLength = A - B;
@@ -19,20 +24,41 @@ float ARTSAIController::GetDistance(FVector A, FVector B)
 
 void ARTSAIController::Move(FVector MoveTo)
 {
+	bUnitBusy = true;
+
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+
+	//OLD
+	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
+
+	float Distance = GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
+	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
+	float RequiredTime = Distance / MaxSpd;
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
+
+	GetWorld()->GetTimerManager().SetTimer(MoveTimerHandle, this, &ARTSAIController::PerformMove, RequiredTime, false);
+}
+
+void ARTSAIController::PerformMove()
+{
+	bUnitBusy = false;
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 }
 
 void ARTSAIController::Knife(FHitResult Hit)
 {	
+	bUnitBusy = true;
+
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -77,10 +103,13 @@ void ARTSAIController::PrepareAttack()
 
 void ARTSAIController::FirePistol(FHitResult Hit)
 {
+	bUnitBusy = true;
+
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -153,16 +182,20 @@ void ARTSAIController::PerformAttack()
 		}
 	}
 
+	bUnitBusy = false;
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	Target = nullptr;
 }
 
 void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
 {
+	bUnitBusy = true;
+
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle); 
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -250,6 +283,7 @@ void ARTSAIController::PerformAid()
 		UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSCharacter>(Target)->GetHealth());
 	}
 
+	bUnitBusy = false;
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	Target = nullptr;
 }

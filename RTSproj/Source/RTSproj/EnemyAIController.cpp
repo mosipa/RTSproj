@@ -87,7 +87,8 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 		//If player unit was spotted
 		//And player unit isn't dead already
 		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>()
-			&& !(Cast<ARTSCharacter>(SensedActor)->IsCharacterDead()))
+			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterDead())
+			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterArrested()))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PlayerUnit spotted at %s"), *(SensedActor->GetActorLocation().ToString()));
 			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);

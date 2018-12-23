@@ -8,6 +8,9 @@
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "Engine/World.h"
+#include "RTSCharacter.h"
+#include "RTSAIController.h"
+#include "RTSPlayerUnit.h"
 
 EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -16,38 +19,33 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
 	if (!Pawn) { return EBTNodeResult::Failed; }
 
-	Target = Cast<AActor>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
+	Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
 	if (!Target) { return EBTNodeResult::Failed; }
 
-	//Get target location from Blackboard and set it for this moment (only do it once per arrest)
-	if (!bPlayerUnitPrevLocationSet)
-	{
-		SetPlayerUnitPrevLocation(BlackboardComponent);
-	}
-
-	//TODO doesn't work when enemy AI tries to arrest 2 or more player units
-	if (!bArrested && !(PlayerUnitPrevLocation.Equals(BlackboardComponent->GetValueAsVector("PlayerUnitLocation"))))
+	//TODO doesn't work when enemy AI tries to arrest 2 or more player units (2units are consider fugitive, even if only 1unit is)
+	if(Cast<ARTSAIController>(Cast<ACharacter>(Target)->GetController())->IsUnitBusy())
 	{
 		bPlayerUnitMoved = true;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("%s: %i"), *(Target->GetName()), Cast<ARTSAIController>(Cast<ACharacter>(Target)->GetController())->IsUnitBusy());
+
 	//Rotate AI to face player unit 
 	FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
 	Pawn->SetActorRotation(BodyRotation);
+
+	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
 
 	//Player unit tries to run away
 	if (bPlayerUnitMoved)
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-		BlackboardComponent->SetValueAsVector("PlayerUnitLocation", PlayerUnitPrevLocation);
+		BlackboardComponent->SetValueAsVector("PlayerUnitLocation", Target->GetActorLocation());
 		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
-		bArrested = false; 
-		bPlayerUnitPrevLocationSet = false;
-		bPlayerUnitMoved = false;
 	}
 	//Player unit doesn't move so get closer
-	else
+	else if(!bPlayerUnitMoved && DistanceToPrison > 150.f)
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
@@ -57,32 +55,22 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		//If close enough, make arrest - put him in prison
 		if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
 		{
-			bArrested = true;
+			Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
 			Target->SetActorRotation(Pawn->GetActorRotation());
 			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
 		}
 	}
-
-	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
-
-	if (DistanceToPrison <= 100.f)
-	{
+	else if (bPlayerUnitMoved && DistanceToPrison <= 150.f)
+	{	
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
+		BlackboardComponent->ClearValue("PlayerUnitKey");
+		BlackboardComponent->ClearValue("PlayerUnitLocation");
 		return EBTNodeResult::Succeeded;
 	}
 
-	//Update current player unit position
-	PlayerUnitPrevLocation = Target->GetActorLocation();
-
 	return EBTNodeResult::Succeeded;
-}
-
-void UMakeArrest::SetPlayerUnitPrevLocation(UBlackboardComponent* Blackboard)
-{
-	bPlayerUnitPrevLocationSet = true;
-	PlayerUnitPrevLocation = Blackboard->GetValueAsVector("PlayerUnitLocation");
 }
 
 float UMakeArrest::GetDistance(FVector A, FVector B)

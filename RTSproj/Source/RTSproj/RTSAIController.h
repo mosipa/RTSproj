@@ -21,8 +21,12 @@ UCLASS()
 class RTSPROJ_API ARTSAIController : public AAIController
 {
 	GENERATED_BODY()
-	
+
+	ARTSAIController();
+
 public:
+	FORCEINLINE bool IsUnitBusy() { return bUnitBusy; }
+
 	void Move(FVector MoveTo);
 	
 	void Knife(FHitResult Hit);
@@ -34,6 +38,8 @@ public:
 	void Aid(FHitResult Hit, EUnitState UnitState);
 
 private:
+	bool bUnitBusy;
+
 	float Damage;
 
 	AActor* Target;
@@ -43,6 +49,7 @@ private:
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GettingCloserTimerHandle;
 	FTimerHandle AidTimerHandle;
+	FTimerHandle MoveTimerHandle;
 
 	void PrepareAttack();
 	void PrepareToFire();
@@ -57,6 +64,9 @@ private:
 
 	UFUNCTION()
 		void PerformAid();
+
+	UFUNCTION()
+		void PerformMove();
 
 	EUnitState InteralUnitState;
 

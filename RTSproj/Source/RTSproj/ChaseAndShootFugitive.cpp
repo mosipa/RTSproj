@@ -8,6 +8,7 @@
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "RTSCharacter.h"
+#include "RTSPlayerUnit.h"
 
 EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -26,6 +27,7 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
 
 	//If close enough start shooting
+	//&& !Cast<ARTSPlayerUnit>(Target)->IsCharacterArrested() SOLVES ISSUE WITH SHOOTING THE NON-FUGITIVE PlayerUnit
 	if (Distance <= 400.f)
 	{
 		//Rotate AI to face Enemy 
