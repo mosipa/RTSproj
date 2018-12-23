@@ -95,7 +95,6 @@ void ARTSPlayerController::ZoomOut()
 void ARTSPlayerController::Select()
 {
 	if (!HUDPtr) { return; }
-	UE_LOG(LogTemp, Warning, TEXT("Selecting"));
 	HUDPtr->InitialPoint = HUDPtr->GetMousePosition2D();
 	HUDPtr->bStartSelecting = true;
 }
@@ -103,7 +102,6 @@ void ARTSPlayerController::Select()
 void ARTSPlayerController::FinishSelecting()
 {
 	if (!HUDPtr) { return; }
-	UE_LOG(LogTemp, Warning, TEXT("FinishSelecting"));
 	HUDPtr->bStartSelecting = false;
 }
 
@@ -112,7 +110,6 @@ void ARTSPlayerController::Move()
 	if (!HUDPtr) { return; }
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Moving"));
 		TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();
 
 		FHitResult Hit;

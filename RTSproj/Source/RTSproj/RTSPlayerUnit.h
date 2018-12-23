@@ -20,7 +20,7 @@ public:
 	void Select();
 	void Unselect();
 
-	void SetArrested(bool Arrested);
+	FORCEINLINE void SetArrested(bool Arrested) { bIsArrested = Arrested; }
 	FORCEINLINE bool IsCharacterArrested() { return bIsArrested; }
 
 private:

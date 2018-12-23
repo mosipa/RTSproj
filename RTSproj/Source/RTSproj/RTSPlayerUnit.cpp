@@ -17,8 +17,3 @@ void ARTSPlayerUnit::Unselect()
 {
 	CursorToWorld->SetVisibility(false);
 }
-
-void ARTSPlayerUnit::SetArrested(bool Arrested)
-{
-	bIsArrested = Arrested;
-}

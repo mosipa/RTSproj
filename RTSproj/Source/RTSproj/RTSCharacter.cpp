@@ -123,7 +123,6 @@ void ARTSCharacter::SubtractHealth(float Val)
 
 void ARTSCharacter::Bleed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Character: %s is bleeding"), *(this->GetName()));
 	SubtractHealth(2.f);
 }
 
@@ -137,5 +136,4 @@ void ARTSCharacter::DestroyCharacter()
 {
 	bIsDead = true;
 	this->DetachFromControllerPendingDestroy();
-	UE_LOG(LogTemp, Warning, TEXT("Character: %s is dead"), *(this->GetName()));
 }

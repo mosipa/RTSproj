@@ -12,8 +12,6 @@
 
 EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fugitive trying to escape"));
-
 	BlackboardComponent = OwnerComp.GetBlackboardComponent();
 
 	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
@@ -27,7 +25,7 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
 
 	//If close enough start shooting
-	//&& !Cast<ARTSPlayerUnit>(Target)->IsCharacterArrested() SOLVES ISSUE WITH SHOOTING THE NON-FUGITIVE PlayerUnit
+	//TODO shooting = 100% death of unit - make some sort of adjustment so playerunit has a chance to survive
 	if (Distance <= 400.f)
 	{
 		//Rotate AI to face Enemy 
@@ -48,7 +46,6 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	//If fugitive dies clear all keys
 	if (Target->IsCharacterDead())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Fugitive: %s died"), *(Target->GetName()));
 		BlackboardComponent->ClearValue("PlayerUnitKey");
 		BlackboardComponent->ClearValue("PlayerUnitLocation");
 		BlackboardComponent->ClearValue("PlayerUnitOnMove");

@@ -25,9 +25,7 @@ private:
 	class UBlackboardData* BlackboardAsset;
 	class UBehaviorTree* BehaviorTree;
 
-	UPROPERTY(VisibleAnywhere)
 	class UAIPerceptionComponent* AIPerceptionComponent;
-	UPROPERTY(VisibleAnywhere)
 	class UAISenseConfig_Sight* Sight;
 
 	virtual void Possess(APawn* Pawn) override;
