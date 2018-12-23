@@ -22,13 +22,7 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
 	if (!Target) { return EBTNodeResult::Failed; }
 
-	//TODO doesn't work when enemy AI tries to arrest 2 or more player units (2units are consider fugitive, even if only 1unit is)
-	if(Cast<ARTSAIController>(Cast<ACharacter>(Target)->GetController())->IsUnitBusy())
-	{
-		bPlayerUnitMoved = true;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%s: %i"), *(Target->GetName()), Cast<ARTSAIController>(Cast<ACharacter>(Target)->GetController())->IsUnitBusy());
+	bool bPlayerUnitBehaveWierd = Cast<ARTSAIController>(Cast<ACharacter>(Target)->GetController())->IsUnitBusy();
 
 	//Rotate AI to face player unit 
 	FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
@@ -36,8 +30,8 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 
 	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
 
-	//Player unit tries to run away
-	if (bPlayerUnitMoved)
+	//Player unit tries to do something
+	if (bPlayerUnitBehaveWierd)
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
@@ -45,7 +39,7 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
 	}
 	//Player unit doesn't move so get closer
-	else if(!bPlayerUnitMoved && DistanceToPrison > 150.f)
+	else if(!bPlayerUnitBehaveWierd && DistanceToPrison > 150.f)
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
@@ -61,7 +55,8 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
 		}
 	}
-	else if (bPlayerUnitMoved && DistanceToPrison <= 150.f)
+	//TODO a bit buggy
+	else if (!bPlayerUnitBehaveWierd && DistanceToPrison <= 150.f)
 	{	
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;

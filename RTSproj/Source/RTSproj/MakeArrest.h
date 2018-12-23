@@ -21,8 +21,6 @@ private:
 	UBlackboardComponent* BlackboardComponent;
 	APawn* Pawn;
 	AActor* Target;
-
-	bool bPlayerUnitMoved = false;
 	
 	//TODO get location of prison from map
 	FVector PRISON_LOCATION = FVector(-380.f, 0.f, 170.f);
