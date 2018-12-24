@@ -58,7 +58,6 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	//TODO a bit buggy
 	else if (!bPlayerUnitBehaveWierd && DistanceToPrison <= 150.f)
 	{	
-		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		BlackboardComponent->ClearValue("PlayerUnitKey");
 		BlackboardComponent->ClearValue("PlayerUnitLocation");

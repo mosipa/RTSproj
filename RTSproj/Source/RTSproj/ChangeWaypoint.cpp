@@ -4,16 +4,20 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "EnemyAIController.h"
 #include "RTSEnemyUnit.h"
+#include "EnemyAIController.h"
+#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 
 EBTNodeResult::Type UChangeWaypoint::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
 	Blackboard = OwnerComp.GetBlackboardComponent();
+	Pawn = Cast<APawn>(Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn());
 
 	GetPatrolPoints(OwnerComp);
 	if (PatrolPoints.Num() == 0) { return EBTNodeResult::Aborted; }
 
 	SetNextWaypoint();
 	SetNextIndex();
+	SetPatrolSpeed(Pawn);
 
 	return EBTNodeResult::Succeeded;
 }
@@ -38,4 +42,7 @@ void UChangeWaypoint::SetNextIndex()
 	Blackboard->SetValueAsInt(FName("IndexKey"), NewIndex);
 }
 
-
+void UChangeWaypoint::SetPatrolSpeed(APawn* Pawn)
+{
+	Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 300.f;
+}

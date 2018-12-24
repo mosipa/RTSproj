@@ -19,7 +19,7 @@ public:
 
 private:
 	TArray<AActor*> PatrolPoints;
-
+	APawn* Pawn;
 	UBlackboardComponent* Blackboard;
 
 	int32 Index;
@@ -27,4 +27,5 @@ private:
 	void GetPatrolPoints(UBehaviorTreeComponent& OwnerComp);
 	void SetNextWaypoint();
 	void SetNextIndex();
+	void SetPatrolSpeed(APawn* Pawn);
 };
