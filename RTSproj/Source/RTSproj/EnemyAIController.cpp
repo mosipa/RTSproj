@@ -22,8 +22,10 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Int>(FName("IndexKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("PlayerUnitKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("PlayerUnitLocation"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("LastKnownLocation"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerUnitOnMove"));
-	
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("SensedUnit"));
+
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Game/Blueprints/EnemyBT"));
@@ -43,8 +45,8 @@ AEnemyAIController::AEnemyAIController()
 	Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightSense"));
 	if (Sight)
 	{
-		Sight->SightRadius = 500;
-		Sight->LoseSightRadius = 600;
+		Sight->SightRadius = 1000;
+		Sight->LoseSightRadius = 1100;
 		Sight->PeripheralVisionAngleDegrees = 114.f; //Actual human peripheral vision angle 
 		Sight->DetectionByAffiliation.bDetectEnemies = true;
 		Sight->DetectionByAffiliation.bDetectNeutrals = true;
@@ -94,11 +96,13 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
 			this->BlackboardComponent->SetValueAsVector("PlayerUnitLocation", SensedActor->GetActorLocation());
 			this->BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", false);
+			this->BlackboardComponent->SetValueAsBool("SensedUnit", true);
 		}
 	}
 	//If noone is in sight radius
 	else
 	{
+		this->BlackboardComponent->ClearValue("SensedUnit");
 		this->BlackboardComponent->ClearValue("PlayerUnitKey");
 		this->BlackboardComponent->ClearValue("PlayerUnitLocation");
 		this->BlackboardComponent->ClearValue("PlayerUnitOnMove");

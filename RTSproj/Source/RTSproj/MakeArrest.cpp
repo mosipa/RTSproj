@@ -29,22 +29,29 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	Pawn->SetActorRotation(BodyRotation);
 
 	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
-
+	float Distance = GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
+	
 	//Player unit tries to do something
 	if (bPlayerUnitBehaveWierd)
 	{
-		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 600.f;
+		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 450.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-		BlackboardComponent->SetValueAsVector("PlayerUnitLocation", Target->GetActorLocation());
-		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
+		
+		if (Distance > 400)
+		{
+			BlackboardComponent->SetValueAsVector("LastKnownLocation", BlackboardComponent->GetValueAsVector("PlayerUnitLocation"));
+		}
+		else
+		{
+			BlackboardComponent->SetValueAsVector("PlayerUnitLocation", Target->GetActorLocation());
+			BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
+		}
 	}
 	//Player unit doesn't move so get closer
 	else if(!bPlayerUnitBehaveWierd && DistanceToPrison > 150.f)
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
 		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
-
-		float Distance = GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
 
 		//If close enough, make arrest - put him in prison
 		if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
