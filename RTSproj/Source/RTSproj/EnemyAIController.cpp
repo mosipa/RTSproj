@@ -21,10 +21,8 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("NextWaypoint"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Int>(FName("IndexKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("PlayerUnitKey"));
-	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("PlayerUnitLocation"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("LastKnownLocation"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerUnitOnMove"));
-	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("SensedUnit"));
 
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -93,18 +91,9 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterDead())
 			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterArrested()))
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Sensed: %s"), *(SensedActor->GetName()));
 			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
-			this->BlackboardComponent->SetValueAsVector("PlayerUnitLocation", SensedActor->GetActorLocation());
-			this->BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", false);
-			this->BlackboardComponent->SetValueAsBool("SensedUnit", true);
 		}
 	}
-	//If noone is in sight radius
-	else
-	{
-		this->BlackboardComponent->ClearValue("SensedUnit");
-		this->BlackboardComponent->ClearValue("PlayerUnitKey");
-		this->BlackboardComponent->ClearValue("PlayerUnitLocation");
-		this->BlackboardComponent->ClearValue("PlayerUnitOnMove");
-	}
+	UE_LOG(LogTemp, Warning, TEXT("Not sensing2"));
 }

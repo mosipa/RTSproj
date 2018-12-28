@@ -36,39 +36,34 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 450.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-		
-		if (Distance > 400)
-		{
-			BlackboardComponent->SetValueAsVector("LastKnownLocation", BlackboardComponent->GetValueAsVector("PlayerUnitLocation"));
-		}
-		else
-		{
-			BlackboardComponent->SetValueAsVector("PlayerUnitLocation", Target->GetActorLocation());
-			BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
-		}
+
+		BlackboardComponent->SetValueAsVector("LastKnownLocation", Target->GetActorLocation());
+		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
 	}
 	//Player unit doesn't move so get closer
-	else if(!bPlayerUnitBehaveWierd && DistanceToPrison > 150.f)
+	else if(!bPlayerUnitBehaveWierd)
 	{
-		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
-		UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
-
-		//If close enough, make arrest - put him in prison
-		if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
+		if (DistanceToPrison > 150.f)
 		{
-			Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
-			Target->SetActorRotation(Pawn->GetActorRotation());
-			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
+			Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
+			UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
+
+			//If close enough, make arrest - put him in prison
+			if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
+			{
+				Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
+				Target->SetActorRotation(Pawn->GetActorRotation());
+				Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
+				UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
+			}
 		}
-	}
-	//TODO a bit buggy
-	else if (!bPlayerUnitBehaveWierd && DistanceToPrison <= 150.f)
-	{	
-		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-		BlackboardComponent->ClearValue("PlayerUnitKey");
-		BlackboardComponent->ClearValue("PlayerUnitLocation");
-		return EBTNodeResult::Succeeded;
+		//TODO a bit buggy
+		else
+		{
+			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
+			BlackboardComponent->ClearValue("PlayerUnitKey");
+			BlackboardComponent->ClearValue("PlayerUnitOnMove");
+		}
 	}
 
 	return EBTNodeResult::Succeeded;

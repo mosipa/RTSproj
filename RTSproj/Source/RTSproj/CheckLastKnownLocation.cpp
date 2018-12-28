@@ -5,6 +5,7 @@
 #include "RTSCharacter.h"
 #include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
+#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 
 EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -20,16 +21,11 @@ EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent 
 
 	float Distance = GetDistance(Pawn->GetActorLocation(), LastKnownLocation);
 
-	if (Distance > 100.f)
-	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(EnemyAIController, LastKnownLocation);
-	}
-	else
-	{
-		BlackboardComponent->SetValueAsVector("PlayerUnitLocation", LastKnownLocation);
-		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
-		BlackboardComponent->ClearValue("LastKnownLocation");
-	}
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(EnemyAIController, LastKnownLocation);
+
+	//BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
+	//BlackboardComponent->ClearValue("LastKnownLocation");
+
 	
 	return EBTNodeResult::Succeeded;
 }
