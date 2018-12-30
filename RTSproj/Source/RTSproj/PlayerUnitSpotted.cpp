@@ -19,7 +19,6 @@ EBTNodeResult::Type UPlayerUnitSpotted::ExecuteTask(UBehaviorTreeComponent & Own
 		
 		auto Target = Cast<AActor>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
 
-		//BlackboardComponent->SetValueAsVector("LastKnownLocation", Target->GetActorLocation());
 		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", false);
 
 		//Rotate AI to face player unit 

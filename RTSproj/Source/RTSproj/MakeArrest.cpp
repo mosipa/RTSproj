@@ -31,6 +31,17 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
 	float Distance = GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
 	
+	UAIBlueprintHelperLibrary::SimpleMoveToActor(Pawn->GetController(), Target);
+
+	if (Distance <= 400.f)
+	{
+		BlackboardComponent->SetValueAsBool("PlayerInRange", true);
+	}
+	else
+	{
+		BlackboardComponent->SetValueAsBool("PlayerInRange", false);
+	}
+
 	//Player unit tries to do something
 	if (bPlayerUnitBehaveWierd)
 	{
@@ -43,26 +54,28 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	//Player unit doesn't move so get closer
 	else if(!bPlayerUnitBehaveWierd)
 	{
-		if (DistanceToPrison > 150.f)
+		//If close enough, make arrest - put him in prison
+		if (Distance <= 100.f)
 		{
-			Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
-			UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
+			Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
+			Target->SetActorRotation(Pawn->GetActorRotation());
+			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
 
-			//If close enough, make arrest - put him in prison
-			if (GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation()) <= 100.f)
+			if (DistanceToPrison > 150.f)
 			{
-				Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
-				Target->SetActorRotation(Pawn->GetActorRotation());
-				Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
+				Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 200.f;
+				UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
 			}
-		}
-		//TODO a bit buggy
-		else
-		{
-			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-			BlackboardComponent->ClearValue("PlayerUnitKey");
-			BlackboardComponent->ClearValue("PlayerUnitOnMove");
+			//TODO a bit buggy
+			else
+			{
+				Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
+				BlackboardComponent->ClearValue("PlayerUnitKey");
+				BlackboardComponent->ClearValue("PlayerUnitOnMove");
+				BlackboardComponent->ClearValue("PlayerInSight");
+				BlackboardComponent->ClearValue("PlayerInRange");
+			}
 		}
 	}
 

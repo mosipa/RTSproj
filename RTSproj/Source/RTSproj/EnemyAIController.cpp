@@ -23,6 +23,8 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("PlayerUnitKey"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Vector>(FName("LastKnownLocation"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerUnitOnMove"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerInSight"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerInRange"));
 
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -93,7 +95,11 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Sensed: %s"), *(SensedActor->GetName()));
 			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
+			this->BlackboardComponent->SetValueAsBool("PlayerInSight", true);
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Not sensing2"));
+	else
+	{
+		this->BlackboardComponent->SetValueAsBool("PlayerInSight", false);
+	}
 }

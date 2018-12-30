@@ -23,11 +23,25 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	float Distance = GetDistance(Pawn->GetActorLocation(), TargetLocation);
 
 	//Start chasing fugitive
-	UAIBlueprintHelperLibrary::SimpleMoveToActor(Cast<AEnemyAIController>(OwnerComp.GetOwner()), Target);
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<AEnemyAIController>(OwnerComp.GetOwner()), TargetLocation);
 
 	//If close enough start shooting
 	//TODO shooting = 100% death of unit - make some sort of adjustment so playerunit has a chance to survive
 	if (Distance <= 400.f)
+	{
+		BlackboardComponent->SetValueAsBool("PlayerInRange", true);
+	}
+	else
+	{
+		BlackboardComponent->SetValueAsBool("PlayerInRange", false);
+	}
+
+	bool bInRange = BlackboardComponent->GetValueAsBool("PlayerInRange");
+	bool bInSight = BlackboardComponent->GetValueAsBool("PlayerInSight");
+
+	UE_LOG(LogTemp, Warning, TEXT("Sight: %i, Range: %i"), bInSight, bInRange);
+
+	if (bInRange && bInSight)
 	{
 		//Rotate AI to face Enemy 
 		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
@@ -50,6 +64,8 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 		BlackboardComponent->ClearValue("PlayerUnitKey");
 		BlackboardComponent->ClearValue("PlayerUnitOnMove");
 		BlackboardComponent->ClearValue("LastKnownLocation");
+		BlackboardComponent->ClearValue("PlayerInRange");
+		BlackboardComponent->ClearValue("PlayerInSight");
 	}
 
 	return EBTNodeResult::Succeeded;
