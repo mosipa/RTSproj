@@ -9,6 +9,7 @@
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "RTSCharacter.h"
 #include "RTSPlayerUnit.h"
+#include "MyMathClass.h"
 
 EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -20,7 +21,7 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	auto Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
 	FVector TargetLocation = BlackboardComponent->GetValueAsVector("LastKnownLocation");
 
-	float Distance = GetDistance(Pawn->GetActorLocation(), TargetLocation);
+	float Distance = MyMathClass::GetDistance(Pawn->GetActorLocation(), TargetLocation);
 
 	//Start chasing fugitive
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<AEnemyAIController>(OwnerComp.GetOwner()), TargetLocation);
@@ -69,11 +70,4 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	}
 
 	return EBTNodeResult::Succeeded;
-}
-
-float UChaseAndShootFugitive::GetDistance(FVector A, FVector B)
-{
-	FVector VectorLength = A - B;
-	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
-	return Distance;
 }

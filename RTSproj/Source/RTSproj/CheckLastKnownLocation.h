@@ -22,6 +22,4 @@ private:
 	class AEnemyAIController* EnemyAIController;
 	APawn* Pawn;
 	FVector LastKnownLocation;
-
-	float GetDistance(FVector A, FVector B);
 };

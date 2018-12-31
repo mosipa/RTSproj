@@ -11,6 +11,7 @@
 #include "RTSCharacter.h"
 #include "RTSAIController.h"
 #include "RTSPlayerUnit.h"
+#include "MyMathClass.h"
 
 EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -28,8 +29,8 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
 	Pawn->SetActorRotation(BodyRotation);
 
-	float DistanceToPrison = GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
-	float Distance = GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
+	float DistanceToPrison = MyMathClass::GetDistance(Target->GetActorLocation(), PRISON_LOCATION);
+	float Distance = MyMathClass::GetDistance(Pawn->GetActorLocation(), Target->GetActorLocation());
 	
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(Pawn->GetController(), Target);
 
@@ -80,11 +81,4 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	}
 
 	return EBTNodeResult::Succeeded;
-}
-
-float UMakeArrest::GetDistance(FVector A, FVector B)
-{
-	FVector VectorLength = A - B;
-	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
-	return Distance;
 }

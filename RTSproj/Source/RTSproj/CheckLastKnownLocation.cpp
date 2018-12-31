@@ -35,18 +35,6 @@ EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent 
 			BlackboardComponent->ClearValue("PlayerInRange");
 		}
 	}
-	else if(bInSight)
-	{
-		FVector TargetLocation = Cast<AActor>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"))->GetActorLocation();
-		BlackboardComponent->SetValueAsVector("LastKnownLocation", TargetLocation);
-	}
 
 	return EBTNodeResult::Succeeded;
-}
-
-float UCheckLastKnownLocation::GetDistance(FVector A, FVector B)
-{
-	FVector VectorLength = A - B;
-	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
-	return Distance;
 }

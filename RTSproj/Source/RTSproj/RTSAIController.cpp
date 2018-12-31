@@ -9,17 +9,11 @@
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 #include "Projectile.h"
+#include "MyMathClass.h"
 
 ARTSAIController::ARTSAIController()
 {
 	bUnitBusy = false;
-}
-
-float ARTSAIController::GetDistance(FVector A, FVector B)
-{
-	FVector VectorLength = A - B;
-	float Distance = FMath::Sqrt(FMath::Pow(VectorLength.X, 2) + FMath::Pow(VectorLength.Y, 2) + FMath::Pow(VectorLength.Z, 2));
-	return Distance;
 }
 
 void ARTSAIController::Move(FVector MoveTo)
@@ -32,10 +26,7 @@ void ARTSAIController::Move(FVector MoveTo)
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 
-	//OLD
-	//UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
-
-	float Distance = GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
+	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
 	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
 	float RequiredTime = Distance / MaxSpd;
 
@@ -77,7 +68,7 @@ void ARTSAIController::Knife(FHitResult Hit)
 
 void ARTSAIController::PrepareAttack()
 {
-	float Distance = GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
+	float Distance = MyMathClass::GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
 	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
 	float TimeToReach = Distance / MaxSpd;
 
@@ -128,7 +119,7 @@ void ARTSAIController::FirePistol(FHitResult Hit)
 
 void ARTSAIController::PrepareToFire()
 {
-	float Distance = GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
+	float Distance = MyMathClass::GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
 	float TimeToReach;
 
 	//Range is 450.f
@@ -228,7 +219,7 @@ void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
 
 void ARTSAIController::PrepareAid()
 {
-	float Distance = GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
+	float Distance = MyMathClass::GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation());
 	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
 	float TimeToReach = Distance / MaxSpd;
 

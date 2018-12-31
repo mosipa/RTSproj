@@ -44,8 +44,6 @@ private:
 
 	AActor* Target;
 
-	float GetDistance(FVector A, FVector B);
-
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GettingCloserTimerHandle;
 	FTimerHandle AidTimerHandle;
