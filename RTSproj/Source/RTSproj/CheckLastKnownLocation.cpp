@@ -18,15 +18,29 @@ EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent 
 	if (!Pawn) { return EBTNodeResult::Failed; }
 
 	LastKnownLocation = BlackboardComponent->GetValueAsVector("LastKnownLocation");
+	bool bInSight = BlackboardComponent->GetValueAsBool("PlayerInSight");
 
-	float Distance = GetDistance(Pawn->GetActorLocation(), LastKnownLocation);
+	UE_LOG(LogTemp, Warning, TEXT("Sight: %i"), bInSight);
 
-	UAIBlueprintHelperLibrary::SimpleMoveToLocation(EnemyAIController, LastKnownLocation);
+	if(!bInSight)
+	{
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(EnemyAIController, LastKnownLocation);
 
-	//BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
-	//BlackboardComponent->ClearValue("LastKnownLocation");
+		if (Pawn->GetActorLocation().Equals(LastKnownLocation, 100.f))
+		{
+			BlackboardComponent->ClearValue("LastKnownLocation");
+			BlackboardComponent->ClearValue("PlayerUnitKey");
+			BlackboardComponent->ClearValue("PlayerUnitOnMove");
+			BlackboardComponent->ClearValue("PlayerInSight");
+			BlackboardComponent->ClearValue("PlayerInRange");
+		}
+	}
+	else if(bInSight)
+	{
+		FVector TargetLocation = Cast<AActor>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"))->GetActorLocation();
+		BlackboardComponent->SetValueAsVector("LastKnownLocation", TargetLocation);
+	}
 
-	
 	return EBTNodeResult::Succeeded;
 }
 
