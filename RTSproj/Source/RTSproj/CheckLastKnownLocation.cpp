@@ -9,7 +9,6 @@
 
 EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
-	UE_LOG(LogTemp, Warning, TEXT("LAST KNOWN LOCATION"));
 	BlackboardComponent = OwnerComp.GetBlackboardComponent();
 
 	EnemyAIController = Cast<AEnemyAIController>(OwnerComp.GetOwner());
@@ -20,8 +19,6 @@ EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent 
 
 	LastKnownLocation = BlackboardComponent->GetValueAsVector("LastKnownLocation");
 	bool bInSight = BlackboardComponent->GetValueAsBool("PlayerInSight");
-
-	UE_LOG(LogTemp, Warning, TEXT("Sight: %i"), bInSight);
 
 	if(!bInSight)
 	{

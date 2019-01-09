@@ -40,8 +40,6 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	bool bInRange = BlackboardComponent->GetValueAsBool("PlayerInRange");
 	bool bInSight = BlackboardComponent->GetValueAsBool("PlayerInSight");
 
-	UE_LOG(LogTemp, Warning, TEXT("Sight: %i, Range: %i"), bInSight, bInRange);
-
 	if (bInSight)
 	{
 		if (bInRange)

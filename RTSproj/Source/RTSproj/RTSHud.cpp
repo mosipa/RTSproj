@@ -26,6 +26,7 @@ void ARTSHud::DrawHUD()
 		TArray<class ARTSPlayerUnit*> ActorsToSelect;
 		GetActorsInSelectionRectangle<ARTSPlayerUnit>(InitialPoint, CurrentPoint, ActorsToSelect, false, false);
 
+		//Only select actors that aren't dead
 		for(auto Character : ActorsToSelect)
 		{
 			if (!Character->IsCharacterDead())
