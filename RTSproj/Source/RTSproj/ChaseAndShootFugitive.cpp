@@ -19,7 +19,7 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	if (!Pawn) { return EBTNodeResult::Failed; }
 	
 	auto Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
-	FVector TargetLocation = BlackboardComponent->GetValueAsVector("LastKnownLocation");
+	FVector TargetLocation = Target->GetActorLocation();
 
 	float Distance = MyMathClass::GetDistance(Pawn->GetActorLocation(), TargetLocation);
 
@@ -42,21 +42,30 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 
 	UE_LOG(LogTemp, Warning, TEXT("Sight: %i, Range: %i"), bInSight, bInRange);
 
-	if (bInRange && bInSight)
+	if (bInSight)
 	{
-		//Rotate AI to face Enemy 
-		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
-		Pawn->SetActorRotation(BodyRotation);
+		if (bInRange)
+		{
+			//Rotate AI to face Enemy 
+			FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
+			Pawn->SetActorRotation(BodyRotation);
 
-		Pawn->GetMovementComponent()->StopMovementImmediately();
+			Pawn->GetMovementComponent()->StopMovementImmediately();
 
-		auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-			Pawn->GetActorLocation() + Pawn->GetActorForwardVector() * 100.f,
-			Pawn->GetActorRotation()
-			);
+			auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+				Pawn->GetActorLocation() + Pawn->GetActorForwardVector() * 100.f,
+				Pawn->GetActorRotation()
+				);
 
-		if (!Projectile) { return EBTNodeResult::Aborted; }
-		Projectile->LaunchProjectile();
+			if (!Projectile) { return EBTNodeResult::Aborted; }
+			Projectile->LaunchProjectile();
+		}
+	}
+	else if (!bInSight)
+	{
+		BlackboardComponent->SetValueAsVector("LastKnownLocation", Target->GetActorLocation());
+		BlackboardComponent->SetValueAsBool("LocationIsSet", true);
+		BlackboardComponent->ClearValue("PlayerUnitKey");
 	}
 
 	//If fugitive dies clear all keys
@@ -67,6 +76,7 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 		BlackboardComponent->ClearValue("LastKnownLocation");
 		BlackboardComponent->ClearValue("PlayerInRange");
 		BlackboardComponent->ClearValue("PlayerInSight");
+		BlackboardComponent->ClearValue("LocationIsSet");
 	}
 
 	return EBTNodeResult::Succeeded;

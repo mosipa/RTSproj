@@ -9,6 +9,7 @@
 
 EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
+	UE_LOG(LogTemp, Warning, TEXT("LAST KNOWN LOCATION"));
 	BlackboardComponent = OwnerComp.GetBlackboardComponent();
 
 	EnemyAIController = Cast<AEnemyAIController>(OwnerComp.GetOwner());
@@ -29,6 +30,7 @@ EBTNodeResult::Type UCheckLastKnownLocation::ExecuteTask(UBehaviorTreeComponent 
 		if (Pawn->GetActorLocation().Equals(LastKnownLocation, 100.f))
 		{
 			BlackboardComponent->ClearValue("LastKnownLocation");
+			BlackboardComponent->ClearValue("LocationIsSet");
 			BlackboardComponent->ClearValue("PlayerUnitKey");
 			BlackboardComponent->ClearValue("PlayerUnitOnMove");
 			BlackboardComponent->ClearValue("PlayerInSight");

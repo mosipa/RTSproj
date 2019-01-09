@@ -25,6 +25,7 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerUnitOnMove"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerInSight"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerInRange"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("LocationIsSet"));
 
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 

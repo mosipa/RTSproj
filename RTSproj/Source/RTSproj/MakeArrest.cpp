@@ -48,8 +48,6 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	{
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 450.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
-
-		BlackboardComponent->SetValueAsVector("LastKnownLocation", Target->GetActorLocation());
 		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
 	}
 	//Player unit doesn't move so get closer
