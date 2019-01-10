@@ -62,24 +62,30 @@ void ARTSPlayerController::MoveCamera()
 	//If cursor is on the edge, slowly move camera in that direction
 	if (MousePosition.X < (float)OutViewportSizeX * 0.05)
 	{
-		ActorLocation.Y -= 12.f;
+		ActorLocation.Y -= 18.f;
 		this->GetPawn()->SetActorLocation(ActorLocation);
 	}
 	if (MousePosition.X > (float)OutViewportSizeX * 0.95)
 	{
-		ActorLocation.Y += 12.f;
+		ActorLocation.Y += 18.f;
 		this->GetPawn()->SetActorLocation(ActorLocation);
 	}
 	if (MousePosition.Y < (float)OutViewportSizeY * 0.05)
 	{
-		ActorLocation.X += 12.f;
+		ActorLocation.X += 18.f;
 		this->GetPawn()->SetActorLocation(ActorLocation);
 	}
 	if (MousePosition.Y > (float)OutViewportSizeY * 0.95)
 	{
-		ActorLocation.X -= 12.f;
+		ActorLocation.X -= 18.f;
 		this->GetPawn()->SetActorLocation(ActorLocation);
 	}
+}
+
+TArray<class ARTSPlayerUnit*> ARTSPlayerController::GetAllSelectedUnits()
+{
+	if (!HUDPtr) { return TArray<class ARTSPlayerUnit*>(); }
+	return HUDPtr->GetSelectedActors();
 }
 
 void ARTSPlayerController::SetupInputComponent()

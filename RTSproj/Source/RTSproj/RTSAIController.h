@@ -27,7 +27,8 @@ class RTSPROJ_API ARTSAIController : public AAIController
 public:
 	FORCEINLINE bool IsUnitBusy() { return bUnitBusy; }
 
-	void Move(FVector MoveTo);
+	UFUNCTION(BlueprintCallable)
+		void Move(FVector MoveTo);
 	
 	void Knife(FHitResult Hit);
 

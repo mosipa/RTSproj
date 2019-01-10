@@ -24,7 +24,8 @@ public:
 
 	void SetupInputComponent() override;
 
-	class ARTSHud* HUDPtr;
+	UFUNCTION(BlueprintCallable)
+		TArray<class ARTSPlayerUnit*> GetAllSelectedUnits();
 
 protected:
 	void Select();
@@ -44,6 +45,8 @@ protected:
 	void ZoomOut();
 
 private:
+	class ARTSHud* HUDPtr;
+
 	void MoveCamera();
 
 	class UUserWidget* UserWidget;
