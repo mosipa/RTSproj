@@ -7,16 +7,36 @@
 #include "Engine/World.h"
 #include "RTSAIController.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
+#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Hand;
+
+	/*
+	ConstructorHelpers::FClassFinder<UUserWidget> NomNom(TEXT("/Game/Blueprints/UserHUD_BP1"));
+	
+	thisUser = &(ConstructorHelpers::FClassFinder<UUserWidget>(TEXT("/Game/Blueprints/UserHUD_BP1")));
+	*/
 }
 
 void ARTSPlayerController::BeginPlay()
 {
+	Super::BeginPlay();
 	HUDPtr = Cast<ARTSHud>(GetHUD());
+	/*
+	//TEST
+	static ConstructorHelpers::FClassFinder<UUserWidget> thisUser(TEXT("/Game/Blueprints/UserHUD_BP1"));
+	if (thisUser.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NOM"));
+		UserWidget = CreateWidget<UUserWidget>(this, thisUser.Class);
+		if (UserWidget)
+		{
+			UserWidget->AddToViewport();
+		}
+	}*/
 }
 
 void ARTSPlayerController::Tick(float DeltaTime)

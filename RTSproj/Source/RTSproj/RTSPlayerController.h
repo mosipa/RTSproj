@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "UObject/ConstructorHelpers.h"
 #include "RTSPlayerController.generated.h"
 
 /**
@@ -44,4 +45,8 @@ protected:
 
 private:
 	void MoveCamera();
+
+	class UUserWidget* UserWidget;
+
+	ConstructorHelpers::FClassFinder<class UUserWidget>* thisUser;
 };
