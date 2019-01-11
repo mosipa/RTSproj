@@ -27,6 +27,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 		TArray<class ARTSPlayerUnit*> GetAllSelectedUnits();
 
+	UFUNCTION(BlueprintCallable)
+		void RemoveMoveBinding();
+	
+	UFUNCTION(BlueprintCallable)
+		void AddBindingBack();
+
 protected:
 	void Select();
 
@@ -48,6 +54,8 @@ private:
 	class ARTSHud* HUDPtr;
 
 	void MoveCamera();
+
+	FInputActionBinding RemovedMoveBinding;
 
 	class UUserWidget* UserWidget;
 

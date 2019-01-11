@@ -95,13 +95,26 @@ void ARTSPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &ARTSPlayerController::ZoomIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &ARTSPlayerController::ZoomOut);
-
+	
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
+}
+
+void ARTSPlayerController::RemoveMoveBinding()
+{
+	if (!InputComponent) { return; }
+	RemovedMoveBinding = InputComponent->GetActionBinding(4);
+	InputComponent->RemoveActionBinding(4);
+}
+
+void ARTSPlayerController::AddBindingBack()
+{
+	if (!InputComponent) { return; }
+	InputComponent->AddActionBinding(RemovedMoveBinding);
 }
 
 void ARTSPlayerController::ZoomIn()

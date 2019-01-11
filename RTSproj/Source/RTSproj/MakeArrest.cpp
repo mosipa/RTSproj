@@ -56,7 +56,6 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 	else if(!bPlayerUnitBehaveWierd)
 	{
 		//If close enough, make arrest - put him in prison
-		//TODO find out how to move characters properly during arrest 
 		if (Distance <= 100.f)
 		{
 			if (!bCollisionToggle)
