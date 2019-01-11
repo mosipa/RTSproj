@@ -14,6 +14,7 @@ ARTSPlayerController::ARTSPlayerController()
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Hand;
 
+	bRemovedBinding = false;
 	/*
 	ConstructorHelpers::FClassFinder<UUserWidget> NomNom(TEXT("/Game/Blueprints/UserHUD_BP1"));
 	
@@ -41,7 +42,7 @@ void ARTSPlayerController::BeginPlay()
 
 void ARTSPlayerController::Tick(float DeltaTime)
 {
-	//Update position of camera every second
+	//Update position of camera every tick
 	MoveCamera();
 }
 
@@ -98,23 +99,36 @@ void ARTSPlayerController::SetupInputComponent()
 	
 	InputComponent->BindAction("Select", IE_Pressed, this, &ARTSPlayerController::Select);
 	InputComponent->BindAction("Select", IE_Released, this, &ARTSPlayerController::FinishSelecting);
-	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
+	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 }
 
 void ARTSPlayerController::RemoveMoveBinding()
 {
 	if (!InputComponent) { return; }
-	RemovedMoveBinding = InputComponent->GetActionBinding(4);
-	InputComponent->RemoveActionBinding(4);
+
+	//In case it's been already removed - dont do it again
+	if (!bRemovedBinding)
+	{
+		//7 - Move - LeftMouseButton
+		RemovedMoveBinding = InputComponent->GetActionBinding(7);
+		InputComponent->RemoveActionBinding(7);
+		bRemovedBinding = true;
+	}
 }
 
 void ARTSPlayerController::AddBindingBack()
 {
 	if (!InputComponent) { return; }
-	InputComponent->AddActionBinding(RemovedMoveBinding);
+
+	//In case it hasn't been removed - dont do it as there's no point of adding it again
+	if (bRemovedBinding)
+	{
+		InputComponent->AddActionBinding(RemovedMoveBinding);
+		bRemovedBinding = false;
+	}
 }
 
 void ARTSPlayerController::ZoomIn()

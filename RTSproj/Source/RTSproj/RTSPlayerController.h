@@ -57,6 +57,8 @@ private:
 
 	FInputActionBinding RemovedMoveBinding;
 
+	bool bRemovedBinding;
+
 	class UUserWidget* UserWidget;
 
 	ConstructorHelpers::FClassFinder<class UUserWidget>* thisUser;
