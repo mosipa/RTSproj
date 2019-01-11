@@ -12,6 +12,7 @@
 #include "RTSAIController.h"
 #include "RTSPlayerUnit.h"
 #include "MyMathClass.h"
+#include "Engine/World.h"
 
 EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -49,6 +50,7 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		Cast<UCharacterMovementComponent>(Pawn->GetMovementComponent())->MaxWalkSpeed = 450.f;
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
+		bCollisionToggle = false;
 	}
 	//Player unit doesn't move so get closer
 	else if(!bPlayerUnitBehaveWierd)
@@ -57,8 +59,13 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		//TODO find out how to move characters properly during arrest 
 		if (Distance <= 100.f)
 		{
-			Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
-			Target->SetActorRotation(Pawn->GetActorRotation());
+			if (!bCollisionToggle)
+			{
+				Pawn->SetActorEnableCollision(false);
+				bCollisionToggle = true;
+				GetWorld()->GetTimerManager().SetTimer(CollisionTimerHandle, this, &UMakeArrest::PutCollisionBackOn, 1.5f, false);
+			}
+			
 			Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 200.f;
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(Cast<APawn>(Target)->GetController(), PRISON_LOCATION);
 
@@ -70,13 +77,21 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 			else
 			{
 				Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
+				Cast<ARTSPlayerUnit>(Target)->SetArrested(true);
 				BlackboardComponent->ClearValue("PlayerUnitKey");
 				BlackboardComponent->ClearValue("PlayerUnitOnMove");
 				BlackboardComponent->ClearValue("PlayerInSight");
 				BlackboardComponent->ClearValue("PlayerInRange");
+				bCollisionToggle = false;
 			}
 		}
 	}
 
 	return EBTNodeResult::Succeeded;
+}
+
+void UMakeArrest::PutCollisionBackOn()
+{
+	Pawn->SetActorEnableCollision(true);
+	GetWorld()->GetTimerManager().ClearTimer(CollisionTimerHandle);
 }
