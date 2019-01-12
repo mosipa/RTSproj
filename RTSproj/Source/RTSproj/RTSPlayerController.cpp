@@ -8,6 +8,7 @@
 #include "RTSAIController.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+#include "Runtime/Engine/Classes/Components/InputComponent.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -115,6 +116,8 @@ void ARTSPlayerController::RemoveMoveBinding()
 	{
 		//8 - Move - LeftMouseButton
 		//TODO find a way to get FInputActionBinding with a NAME, not int
+		//use BindingToRemove.GetActionName().ToString() to get name, maybe there's something in it
+		//compare to all bindings and find the one (MOVE) to remove
 		RemovedMoveBinding = InputComponent->GetActionBinding(8);
 		InputComponent->RemoveActionBinding(8);
 		bRemovedBinding = true;
@@ -131,6 +134,19 @@ void ARTSPlayerController::AddBindingBack()
 	{
 		InputComponent->AddActionBinding(RemovedMoveBinding);
 		bRemovedBinding = false;
+	}
+}
+
+void ARTSPlayerController::ChangeBinding(int32 BindingIndex)
+{
+	if (!InputComponent) { return; }
+
+	if (bRemovedBinding)
+	{
+		FInputActionBinding NewBinding = InputComponent->GetActionBinding(BindingIndex);
+		FInputActionBinding OldBinding(RemovedMoveBinding.GetActionName(), RemovedMoveBinding.KeyEvent);
+		OldBinding.ActionDelegate = NewBinding.ActionDelegate;
+		InputComponent->AddActionBinding(OldBinding);
 	}
 }
 

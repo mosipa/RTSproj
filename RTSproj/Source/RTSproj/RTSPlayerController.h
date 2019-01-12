@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void AddBindingBack();
 
+	UFUNCTION(BlueprintCallable)
+		void ChangeBinding(int32 BindingIndex);
+
 protected:
 	void Select();
 
