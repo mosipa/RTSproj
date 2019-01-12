@@ -16,6 +16,8 @@ ARTSPlayerController::ARTSPlayerController()
 	DefaultMouseCursor = EMouseCursor::Hand;
 
 	bRemovedBinding = false;
+
+	//TEST
 	/*
 	ConstructorHelpers::FClassFinder<UUserWidget> NomNom(TEXT("/Game/Blueprints/UserHUD_BP1"));
 	
@@ -27,6 +29,13 @@ void ARTSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	HUDPtr = Cast<ARTSHud>(GetHUD());
+
+	//Set RemovedMoveBinding in BeginPlay because it changes
+	//And during changes it may contain wrong method to execute
+	//So I set it here to prevent that
+	//At least to the moment I find out a better way 
+	RemovedMoveBinding = InputComponent->GetActionBinding(8);
+
 	/*
 	//TEST
 	static ConstructorHelpers::FClassFinder<UUserWidget> thisUser(TEXT("/Game/Blueprints/UserHUD_BP1"));
@@ -118,7 +127,6 @@ void ARTSPlayerController::RemoveMoveBinding()
 		//TODO find a way to get FInputActionBinding with a NAME, not int
 		//use BindingToRemove.GetActionName().ToString() to get name, maybe there's something in it
 		//compare to all bindings and find the one (MOVE) to remove
-		RemovedMoveBinding = InputComponent->GetActionBinding(8);
 		InputComponent->RemoveActionBinding(8);
 		bRemovedBinding = true;
 	}
@@ -221,6 +229,7 @@ void ARTSPlayerController::Knife()
 			}
 		}
 	}
+	this->AddBindingBack();
 }
 
 void ARTSPlayerController::Pistol()
@@ -245,6 +254,7 @@ void ARTSPlayerController::Pistol()
 			}
 		}
 	}
+	this->AddBindingBack();
 }
 
 void ARTSPlayerController::Aid()
@@ -275,4 +285,5 @@ void ARTSPlayerController::Aid()
 			}
 		}
 	}
+	this->AddBindingBack();
 }
