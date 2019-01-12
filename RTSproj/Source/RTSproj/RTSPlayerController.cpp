@@ -102,6 +102,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Knife", IE_Pressed, this, &ARTSPlayerController::Knife);
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
+	InputComponent->BindAction("Cancel", IE_Pressed, this, &ARTSPlayerController::AddBindingBack);
 	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
 }
 
@@ -112,9 +113,10 @@ void ARTSPlayerController::RemoveMoveBinding()
 	//In case it's been already removed - dont do it again
 	if (!bRemovedBinding)
 	{
-		//7 - Move - LeftMouseButton
-		RemovedMoveBinding = InputComponent->GetActionBinding(7);
-		InputComponent->RemoveActionBinding(7);
+		//8 - Move - LeftMouseButton
+		//TODO find a way to get FInputActionBinding with a NAME, not int
+		RemovedMoveBinding = InputComponent->GetActionBinding(8);
+		InputComponent->RemoveActionBinding(8);
 		bRemovedBinding = true;
 	}
 }
@@ -123,7 +125,8 @@ void ARTSPlayerController::AddBindingBack()
 {
 	if (!InputComponent) { return; }
 
-	//In case it hasn't been removed - dont do it as there's no point of adding it again
+	//In case action picked up from User_HUD is over
+	//OR it got canceled - then bring back old binding
 	if (bRemovedBinding)
 	{
 		InputComponent->AddActionBinding(RemovedMoveBinding);
