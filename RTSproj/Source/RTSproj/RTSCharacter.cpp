@@ -128,6 +128,7 @@ void ARTSCharacter::Bleed()
 
 void ARTSCharacter::StopBleeding()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Stopped bleeding"));
 	bIsBleeding = false;
 	GetWorld()->GetTimerManager().ClearTimer(BleedingTimerHandle);
 }

@@ -16,7 +16,7 @@ ARTSPlayerController::ARTSPlayerController()
 	DefaultMouseCursor = EMouseCursor::Hand;
 
 	bRemovedBinding = false;
-
+	bAidValue = false;
 	//TEST
 	/*
 	ConstructorHelpers::FClassFinder<UUserWidget> NomNom(TEXT("/Game/Blueprints/UserHUD_BP1"));
@@ -158,6 +158,11 @@ void ARTSPlayerController::ChangeBinding(int32 BindingIndex)
 	}
 }
 
+void ARTSPlayerController::SetAidValue(bool bNewAidValue)
+{
+	bAidValue = bNewAidValue;
+}
+
 void ARTSPlayerController::ZoomIn()
 {
 	FVector CameraLocation = this->GetPawn()->GetActorLocation();
@@ -273,11 +278,11 @@ void ARTSPlayerController::Aid()
 			{
 				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead())
 				{
-					if (this->WasInputKeyJustPressed(FKey(FName("H"))))
+					if (this->WasInputKeyJustPressed(FKey(FName("H"))) || bAidValue)
 					{
 						Cast<ARTSAIController>(Actor->GetController())->Aid(Hit, EUnitState::Healing);
 					}
-					else if (this->WasInputKeyJustPressed(FKey(FName("C"))))
+					else if (this->WasInputKeyJustPressed(FKey(FName("C"))) || !bAidValue)
 					{
 						Cast<ARTSAIController>(Actor->GetController())->Aid(Hit, EUnitState::Cleansing);
 					}

@@ -36,6 +36,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ChangeBinding(int32 BindingIndex);
 
+	UFUNCTION(BlueprintCallable)
+		void SetAidValue(bool bNewAidValue);
+
 protected:
 	void Select();
 
@@ -61,6 +64,7 @@ private:
 	FInputActionBinding RemovedMoveBinding;
 
 	bool bRemovedBinding;
+	bool bAidValue;
 
 	class UUserWidget* UserWidget;
 
