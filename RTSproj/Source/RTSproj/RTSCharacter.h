@@ -30,6 +30,9 @@ public:
 	FORCEINLINE void AddHealth(float Val) { Health = FMath::Clamp<float>(GetHealth() + Val, 0.f, 100.f); }
 	void SubtractHealth(float Val);
 	FORCEINLINE bool IsCharacterBleeding() { return bIsBleeding; }
+	
+	UFUNCTION(BlueprintCallable)
+		float GetHealthPercent();
 
 	//BlueprintCallable for animation update
 	UFUNCTION(BlueprintCallable)
@@ -55,6 +58,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;	
 
+	float StartingHealth;
 	float Health;
 	bool bIsDead;
 	bool bIsBleeding;

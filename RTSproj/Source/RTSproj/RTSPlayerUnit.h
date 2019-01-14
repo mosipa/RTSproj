@@ -23,6 +23,10 @@ public:
 	FORCEINLINE void SetArrested(bool Arrested) { bIsArrested = Arrested; }
 	FORCEINLINE bool IsCharacterArrested() { return bIsArrested; }
 
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		class UWidgetComponent* WidgetComponent;
+
 private:
 	bool bIsArrested;
 };

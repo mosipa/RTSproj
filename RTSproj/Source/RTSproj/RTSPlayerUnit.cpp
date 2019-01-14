@@ -2,9 +2,15 @@
 
 #include "RTSPlayerUnit.h"
 #include "Components/DecalComponent.h"
+#include "Runtime/UMG/Public/Components/WidgetComponent.h"
 
 ARTSPlayerUnit::ARTSPlayerUnit()
 {
+	//HealthBar
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
+	WidgetComponent->SetupAttachment(RootComponent);
+	WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
+
 	bIsArrested = false;
 }
 

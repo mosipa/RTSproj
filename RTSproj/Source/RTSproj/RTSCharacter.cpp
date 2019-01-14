@@ -57,6 +57,7 @@ ARTSCharacter::ARTSCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
+	StartingHealth = 100.f;
 	Health = 100.f;
 
 	bIsDead = false;
@@ -119,6 +120,13 @@ void ARTSCharacter::SubtractHealth(float Val)
 	{
 		GetWorld()->GetTimerManager().SetTimer(BleedingTimerHandle, this, &ARTSCharacter::Bleed, 1.f, false);
 	}
+}
+
+float ARTSCharacter::GetHealthPercent()
+{
+	float CurrentHealth = this->GetHealth();
+	UE_LOG(LogTemp, Warning, TEXT("%s have %f hp"), *(this->GetName()), CurrentHealth);
+	return CurrentHealth/StartingHealth;
 }
 
 void ARTSCharacter::Bleed()
