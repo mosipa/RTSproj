@@ -84,7 +84,7 @@ void ARTSAIController::PrepareAttack()
 	{
 		Damage = 50.f;
 	}
-
+	
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(this, Target);
 
 	InteralUnitState = EUnitState::Knifing;
@@ -151,31 +151,55 @@ void ARTSAIController::PerformAttack()
 
 		if (InteralUnitState == EUnitState::Knifing)
 		{
-			UGameplayStatics::ApplyDamage(
-				Target,
-				Damage,
-				this,
-				this->GetPawn(),
-				UDamageType::StaticClass()
-			);
+			//Check if close enough to perform stabbing
+			if (MyMathClass::GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation()) <= 150.f)
+			{
+				UGameplayStatics::ApplyDamage(
+					Target,
+					Damage,
+					this,
+					this->GetPawn(),
+					UDamageType::StaticClass()
+				);
+
+				//IMPORTANT:
+				//only clear those values AFTER attack has been performed!
+				bUnitBusy = false;
+				GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+				Target = nullptr;
+			}
+			else
+			{
+				this->PrepareAttack();
+			}
 		}
 		else if (InteralUnitState == EUnitState::FiringGun)
 		{
-			this->GetPawn()->GetMovementComponent()->StopMovementImmediately();
+			//Check if close enough to perform shooting
+			if (MyMathClass::GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation()) <= 450.f)
+			{
+				this->GetPawn()->GetMovementComponent()->StopMovementImmediately();
 
-			auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-				this->GetPawn()->GetActorLocation() + this->GetPawn()->GetActorForwardVector() * 100.f,
-				this->GetPawn()->GetActorRotation()
-				);
+				auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+					this->GetPawn()->GetActorLocation() + this->GetPawn()->GetActorForwardVector() * 100.f,
+					this->GetPawn()->GetActorRotation()
+					);
 
-			if (!Projectile) { return; }
-			Projectile->LaunchProjectile();
+				if (!Projectile) { return; }
+				Projectile->LaunchProjectile();
+
+				//IMPORTANT:
+				//only clear those values AFTER attack has been performed!
+				bUnitBusy = false;
+				GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+				Target = nullptr;
+			}
+			else
+			{
+				this->PrepareToFire();
+			}
 		}
 	}
-
-	bUnitBusy = false;
-	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-	Target = nullptr;
 }
 
 void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
@@ -264,14 +288,22 @@ void ARTSAIController::GetCloserForAid()
 
 void ARTSAIController::PerformAid()
 {
-	if (InteralUnitState == EUnitState::Cleansing)
+	//Prevent healing/cleansing unit if target unit moved away
+	//Check if close enough to perform healing/cleansing
+	//TODO choose between: 
+	//Healing/cleansing is fully stopped if target of heal/cleanse has moved <-- This one is set now
+	//Or chase the target and try to perform it when it stops again
+	if (MyMathClass::GetDistance(Target->GetActorLocation(), this->GetPawn()->GetActorLocation()) <= 150.f)
 	{
-		Cast<ARTSCharacter>(Target)->StopBleeding();
-	}
-	else if (InteralUnitState == EUnitState::Healing)
-	{
-		Cast<ARTSCharacter>(Target)->AddHealth(20.f);
-		UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSCharacter>(Target)->GetHealth());
+		if (InteralUnitState == EUnitState::Cleansing)
+		{
+			Cast<ARTSCharacter>(Target)->StopBleeding();
+		}
+		else if (InteralUnitState == EUnitState::Healing)
+		{
+			Cast<ARTSCharacter>(Target)->AddHealth(20.f);
+			UE_LOG(LogTemp, Warning, TEXT("Target: %s healed for 20.f. Health left: %f"), *(Target->GetName()), Cast<ARTSCharacter>(Target)->GetHealth());
+		}
 	}
 
 	bUnitBusy = false;

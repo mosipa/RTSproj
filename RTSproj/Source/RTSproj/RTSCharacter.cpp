@@ -125,7 +125,6 @@ void ARTSCharacter::SubtractHealth(float Val)
 float ARTSCharacter::GetHealthPercent()
 {
 	float CurrentHealth = this->GetHealth();
-	UE_LOG(LogTemp, Warning, TEXT("%s have %f hp"), *(this->GetName()), CurrentHealth);
 	return CurrentHealth/StartingHealth;
 }
 
