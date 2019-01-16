@@ -17,12 +17,12 @@ ARTSPlayerController::ARTSPlayerController()
 
 	bRemovedBinding = false;
 	bAidValue = false;
-	//TEST
-	/*
-	ConstructorHelpers::FClassFinder<UUserWidget> NomNom(TEXT("/Game/Blueprints/UserHUD_BP1"));
 	
-	thisUser = &(ConstructorHelpers::FClassFinder<UUserWidget>(TEXT("/Game/Blueprints/UserHUD_BP1")));
-	*/
+	ConstructorHelpers::FClassFinder<UUserWidget> CHUserHUD_BP(TEXT("/Game/Blueprints/UserHUD_BP"));
+	if (CHUserHUD_BP.Succeeded())
+	{
+		UWClass = CHUserHUD_BP.Class;
+	}
 }
 
 void ARTSPlayerController::BeginPlay()
@@ -30,24 +30,18 @@ void ARTSPlayerController::BeginPlay()
 	Super::BeginPlay();
 	HUDPtr = Cast<ARTSHud>(GetHUD());
 
-	//Set RemovedMoveBinding in BeginPlay because it changes
-	//And during changes it may contain wrong method to execute
+	//Set RemovedMoveBinding in BeginPlay because binding changes
+	//And during changes it may override that variable which contains original method
 	//So I set it here to prevent that
 	//At least to the moment I find out a better way 
 	RemovedMoveBinding = InputComponent->GetActionBinding(8);
 
-	/*
-	//TEST
-	static ConstructorHelpers::FClassFinder<UUserWidget> thisUser(TEXT("/Game/Blueprints/UserHUD_BP1"));
-	if (thisUser.Succeeded())
+	//Set UserHUD
+	UserWidget = CreateWidget<UUserWidget>(this, UWClass);
+	if (UserWidget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NOM"));
-		UserWidget = CreateWidget<UUserWidget>(this, thisUser.Class);
-		if (UserWidget)
-		{
-			UserWidget->AddToViewport();
-		}
-	}*/
+		UserWidget->AddToPlayerScreen();
+	}
 }
 
 void ARTSPlayerController::Tick(float DeltaTime)

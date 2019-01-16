@@ -66,7 +66,6 @@ private:
 	bool bRemovedBinding;
 	bool bAidValue;
 
+	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;
-
-	ConstructorHelpers::FClassFinder<class UUserWidget>* thisUser;
 };
