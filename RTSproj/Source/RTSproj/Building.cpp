@@ -14,6 +14,9 @@ ABuilding::ABuilding()
 	CollisionComponent->InitCapsuleSize(75.f, 100.f);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ABuilding::OnOverlapBegin);
+
 	SetRootComponent(Cast<USceneComponent>(CollisionComponent));
 
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("BaseMesh"));
@@ -34,3 +37,7 @@ void ABuilding::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void ABuilding::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s"), *(OtherActor->GetName()));
+}
