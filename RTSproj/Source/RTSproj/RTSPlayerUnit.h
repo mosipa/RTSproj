@@ -20,12 +20,16 @@ public:
 	void Select();
 	void Unselect();
 
-	FORCEINLINE void SetArrested(bool bArrested) { bIsArrested = bArrested; }
 	FORCEINLINE bool IsCharacterArrested() { return bIsArrested; }
+	FORCEINLINE void SetArrested(bool bArrested) { bIsArrested = bArrested; }
 	FORCEINLINE bool IsCharacterInBuilding() { return bIsInBuilding; }
 	FORCEINLINE void SetInBuilding(bool bInBuilding) { bIsInBuilding = bInBuilding; }
+	FORCEINLINE bool IsCharacterInBuildingsRange() { return bInBuildingsRange; }
+	void SetInBuildingsRange(bool bInRange, class ABuilding* Building);
 
-	void HealthBarVisible(bool bToggle);
+	void HealthBarInvisible(bool bVisible);
+
+	class ABuilding* GetNearestBuilding();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -34,4 +38,7 @@ protected:
 private:
 	bool bIsArrested;
 	bool bIsInBuilding;
+	bool bInBuildingsRange;
+
+	class ABuilding* NearBuilding;
 };

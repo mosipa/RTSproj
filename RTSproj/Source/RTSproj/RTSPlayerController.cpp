@@ -9,6 +9,7 @@
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
+#include "Building.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -193,7 +194,6 @@ void ARTSPlayerController::Move()
 
 		FHitResult Hit;
 		GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
-		FVector MoveTo = Hit.Location;
 
 		for (auto Actor : SelectedActors)
 		{
@@ -202,7 +202,17 @@ void ARTSPlayerController::Move()
 			if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
 				&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 			{
-				Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
+				if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
+				{
+					ABuilding* Building = Cast<ABuilding>(Hit.GetActor());
+					Cast<ARTSAIController>(Actor->GetController())->EnterBuilding(Building);
+					//DO SMTH
+				}
+				else
+				{
+					FVector MoveTo = Hit.Location;
+					Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
+				}
 			}
 		}
 	}

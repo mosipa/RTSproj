@@ -38,6 +38,8 @@ public:
 
 	void Aid(FHitResult Hit, EUnitState UnitState);
 
+	void EnterBuilding(class ABuilding* Building);
+
 private:
 	bool bUnitBusy;
 
@@ -49,6 +51,7 @@ private:
 	FTimerHandle GettingCloserTimerHandle;
 	FTimerHandle AidTimerHandle;
 	FTimerHandle MoveTimerHandle;
+	FTimerHandle EnterBuildingTimerHandle;
 
 	void PrepareAttack();
 	void PrepareToFire();
@@ -66,6 +69,9 @@ private:
 
 	UFUNCTION()
 		void PerformMove();
+
+	UFUNCTION()
+		void PerformEnterBuilding(class ABuilding* TargetBuilding);
 
 	EUnitState InteralUnitState;
 

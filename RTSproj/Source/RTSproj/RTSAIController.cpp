@@ -10,6 +10,9 @@
 #include "Engine/World.h"
 #include "Projectile.h"
 #include "MyMathClass.h"
+#include "Building.h"
+#include "RTSPlayerUnit.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 ARTSAIController::ARTSAIController()
 {
@@ -25,6 +28,7 @@ void ARTSAIController::Move(FVector MoveTo)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
 
 	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
 	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
@@ -41,6 +45,55 @@ void ARTSAIController::PerformMove()
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 }
 
+void ARTSAIController::EnterBuilding(ABuilding* Building)
+{
+	FTimerDelegate PerformDelegate;
+
+	bUnitBusy = true;
+
+	//Clearing timers of other actions (in case player changed his mind)
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+
+	FVector MoveTo = Building->GetRootComponent()->GetComponentLocation();
+	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
+	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
+	//TODO adjust timer - doesnt work well for units that are behind building
+	//Maybe dotproduct to determine from which direction unit's approaches building 
+	float RequiredTime = Distance / MaxSpd + .5f;
+
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
+
+	PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building);
+
+	GetWorld()->GetTimerManager().SetTimer(EnterBuildingTimerHandle, PerformDelegate, RequiredTime, false);
+}
+
+void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding)
+{
+	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(this->GetPawn());
+
+	if (PlayerUnit->IsCharacterInBuildingsRange()
+		&& PlayerUnit->GetNearestBuilding()
+		&& TargetBuilding)
+	{
+		if (PlayerUnit->GetNearestBuilding()->GetName().Equals(TargetBuilding->GetName()))
+		{
+			PlayerUnit->HealthBarInvisible(true);
+			PlayerUnit->GetMovementComponent()->StopMovementImmediately();
+			PlayerUnit->SetInBuilding(true);
+			PlayerUnit->SetActorHiddenInGame(true);
+			PlayerUnit->SetActorEnableCollision(false);
+
+			TargetBuilding->UnitEntered(PlayerUnit);
+		}
+	}
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+}
+
 void ARTSAIController::Knife(FHitResult Hit)
 {	
 	bUnitBusy = true;
@@ -50,6 +103,7 @@ void ARTSAIController::Knife(FHitResult Hit)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -101,6 +155,7 @@ void ARTSAIController::FirePistol(FHitResult Hit)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -211,6 +266,7 @@ void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
 	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle); 
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{

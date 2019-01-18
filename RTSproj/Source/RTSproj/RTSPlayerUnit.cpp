@@ -3,6 +3,7 @@
 #include "RTSPlayerUnit.h"
 #include "Components/DecalComponent.h"
 #include "Runtime/UMG/Public/Components/WidgetComponent.h"
+#include "Building.h"
 
 ARTSPlayerUnit::ARTSPlayerUnit()
 {
@@ -13,6 +14,9 @@ ARTSPlayerUnit::ARTSPlayerUnit()
 
 	bIsArrested = false;
 	bIsInBuilding = false;
+	bInBuildingsRange = false;
+
+	NearBuilding = nullptr;
 }
 
 void ARTSPlayerUnit::Select()
@@ -25,7 +29,18 @@ void ARTSPlayerUnit::Unselect()
 	CursorToWorld->SetVisibility(false);
 }
 
-void ARTSPlayerUnit::HealthBarVisible(bool bToggle)
+void ARTSPlayerUnit::HealthBarInvisible(bool bVisible)
 {
-	WidgetComponent->bHiddenInGame = bToggle;
+	WidgetComponent->bHiddenInGame = bVisible;
+}
+
+void ARTSPlayerUnit::SetInBuildingsRange(bool bInRange, ABuilding* Building) 
+{
+	bInBuildingsRange = bInRange;
+	NearBuilding = Building;
+}
+
+ABuilding* ARTSPlayerUnit::GetNearestBuilding() 
+{ 
+	return NearBuilding;
 }

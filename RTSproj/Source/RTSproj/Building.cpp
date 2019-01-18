@@ -5,7 +5,6 @@
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 #include "RTSPlayerUnit.h"
 #include "RTSAIController.h"
-#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -19,11 +18,13 @@ ABuilding::ABuilding()
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ABuilding::OnOverlapBegin);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &ABuilding::OnOverlapEnd);
 
 	SetRootComponent(Cast<USceneComponent>(CollisionComponent));
 
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("BaseMesh"));
 	BaseMesh->SetupAttachment(GetRootComponent());
+	BaseMesh->SetRelativeScale3D(FVector(1.f, 3.f, 2.f));
 	BaseMesh->SetRelativeLocation(FVector(-50.f, 0.f, 0.f));
 
 	UnitsInside.Empty();
@@ -40,24 +41,18 @@ void ABuilding::BeginPlay()
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	UE_LOG(LogTemp, Warning, TEXT("%i"), UnitsInside.Num());
 }
 
 void ABuilding::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s"), *(OtherActor->GetName()));
+	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
+	PlayerUnit->SetInBuildingsRange(true, this);
+}
 
-	UnitsInside.Add(Cast<ARTSPlayerUnit>(OtherActor));
-	
-	ARTSPlayerUnit* Character = Cast<ARTSPlayerUnit>(OtherActor);
-
-	//Stops, sets bool and hides unit from player
-	//TODO move? somewhere unit which has enetered a building or delete/despawn
-	//TODO units get inside building when they're near it - make player click on the building
-	Character->HealthBarVisible(true);
-	Character->GetMovementComponent()->StopMovementImmediately();
-	Character->SetInBuilding(true);
-	Cast<ARTSPlayerUnit>(OtherActor)->SetActorHiddenInGame(true);
-	Cast<ARTSPlayerUnit>(OtherActor)->SetActorEnableCollision(false);
+void ABuilding::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s"), *(OtherActor->GetName()));
+	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
+	PlayerUnit->SetInBuildingsRange(false, nullptr);
 }
