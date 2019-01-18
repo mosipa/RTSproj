@@ -3,6 +3,9 @@
 #include "Building.h"
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
+#include "RTSPlayerUnit.h"
+#include "RTSAIController.h"
+#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ABuilding::ABuilding()
@@ -22,6 +25,8 @@ ABuilding::ABuilding()
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("BaseMesh"));
 	BaseMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetRelativeLocation(FVector(-50.f, 0.f, 0.f));
+
+	UnitsInside.Empty();
 }
 
 // Called when the game starts or when spawned
@@ -35,9 +40,24 @@ void ABuilding::BeginPlay()
 void ABuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("%i"), UnitsInside.Num());
 }
 
 void ABuilding::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s"), *(OtherActor->GetName()));
+
+	UnitsInside.Add(Cast<ARTSPlayerUnit>(OtherActor));
+	
+	ARTSPlayerUnit* Character = Cast<ARTSPlayerUnit>(OtherActor);
+
+	//Stops, sets bool and hides unit from player
+	//TODO move? somewhere unit which has enetered a building or delete/despawn
+	//TODO units get inside building when they're near it - make player click on the building
+	Character->HealthBarVisible(true);
+	Character->GetMovementComponent()->StopMovementImmediately();
+	Character->SetInBuilding(true);
+	Cast<ARTSPlayerUnit>(OtherActor)->SetActorHiddenInGame(true);
+	Cast<ARTSPlayerUnit>(OtherActor)->SetActorEnableCollision(false);
 }

@@ -29,7 +29,8 @@ void ARTSHud::DrawHUD()
 		//Only select actors that aren't dead
 		for(auto Character : ActorsToSelect)
 		{
-			if (!Character->IsCharacterDead())
+			if (!Character->IsCharacterDead()
+				&& !Character->IsCharacterInBuilding())
 			{
 				SelectedActors.Add(Character);
 			}

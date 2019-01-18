@@ -12,6 +12,7 @@ ARTSPlayerUnit::ARTSPlayerUnit()
 	WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f));
 
 	bIsArrested = false;
+	bIsInBuilding = false;
 }
 
 void ARTSPlayerUnit::Select()
@@ -22,4 +23,9 @@ void ARTSPlayerUnit::Select()
 void ARTSPlayerUnit::Unselect()
 {
 	CursorToWorld->SetVisibility(false);
+}
+
+void ARTSPlayerUnit::HealthBarVisible(bool bToggle)
+{
+	WidgetComponent->bHiddenInGame = bToggle;
 }

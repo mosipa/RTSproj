@@ -20,8 +20,12 @@ public:
 	void Select();
 	void Unselect();
 
-	FORCEINLINE void SetArrested(bool Arrested) { bIsArrested = Arrested; }
+	FORCEINLINE void SetArrested(bool bArrested) { bIsArrested = bArrested; }
 	FORCEINLINE bool IsCharacterArrested() { return bIsArrested; }
+	FORCEINLINE bool IsCharacterInBuilding() { return bIsInBuilding; }
+	FORCEINLINE void SetInBuilding(bool bInBuilding) { bIsInBuilding = bInBuilding; }
+
+	void HealthBarVisible(bool bToggle);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -29,4 +33,5 @@ protected:
 
 private:
 	bool bIsArrested;
+	bool bIsInBuilding;
 };

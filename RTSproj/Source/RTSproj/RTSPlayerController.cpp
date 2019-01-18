@@ -197,8 +197,10 @@ void ARTSPlayerController::Move()
 
 		for (auto Actor : SelectedActors)
 		{
-			//If character was selected but died in process dont give him an order
-			if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead())
+			//If character was selected but died in process 
+			//or is inside building dont give him an order
+			if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
+				&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 			{
 				Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
 			}

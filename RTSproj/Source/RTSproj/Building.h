@@ -32,4 +32,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* BaseMesh = nullptr;
+
+	TArray<class ARTSPlayerUnit*> UnitsInside;
 };
