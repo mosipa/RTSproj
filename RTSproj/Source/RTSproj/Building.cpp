@@ -45,13 +45,16 @@ void ABuilding::ReleaseUnits()
 {
 	//TODO units may be stuck due to number of units that reappear
 	//find a way to prevent this from happening
-	for (ARTSPlayerUnit* PlayerUnit : UnitsInside)
+	if (UnitsInside.Num() > 0)
 	{
-		PlayerUnit->HealthBarInvisible(false);
-		PlayerUnit->SetInBuilding(false);
-		PlayerUnit->SetActorHiddenInGame(false);
-		PlayerUnit->SetActorEnableCollision(true);
-	}
+		for (ARTSPlayerUnit* PlayerUnit : UnitsInside)
+		{
+			PlayerUnit->HealthBarInvisible(false);
+			PlayerUnit->SetInBuilding(false);
+			PlayerUnit->SetActorHiddenInGame(false);
+			PlayerUnit->SetActorEnableCollision(true);
+		}
 
-	UnitsInside.Empty();
+		UnitsInside.Empty();
+	}
 }

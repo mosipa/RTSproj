@@ -24,7 +24,8 @@ public:
 public:	
 	FORCEINLINE void UnitEntered(class ARTSPlayerUnit* Unit) { UnitsInside.Add(Unit); }
 
-	void ReleaseUnits();
+	UFUNCTION(BlueprintCallable)
+		void ReleaseUnits();
 
 private:
 	UPROPERTY(VisibleAnywhere)

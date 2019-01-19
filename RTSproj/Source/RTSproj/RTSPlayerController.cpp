@@ -18,7 +18,9 @@ ARTSPlayerController::ARTSPlayerController()
 
 	bRemovedBinding = false;
 	bAidValue = false;
-	
+
+	BuildingPtr = nullptr;
+
 	ConstructorHelpers::FClassFinder<UUserWidget> CHUserHUD_BP(TEXT("/Game/Blueprints/UserHUD_BP"));
 	if (CHUserHUD_BP.Succeeded())
 	{
@@ -34,8 +36,8 @@ void ARTSPlayerController::BeginPlay()
 	//Set RemovedMoveBinding in BeginPlay because binding changes
 	//And during changes it may override that variable which contains original method
 	//So I set it here to prevent that
-	//At least to the moment I find out a better way 
-	RemovedMoveBinding = InputComponent->GetActionBinding(8);
+	//At least to the moment I find a better way 
+	RemovedMoveBinding = InputComponent->GetActionBinding(LEFTMOUSEBUTTONACTION_ID);
 
 	//Set UserHUD
 	UserWidget = CreateWidget<UUserWidget>(this, UWClass);
@@ -119,11 +121,11 @@ void ARTSPlayerController::RemoveMoveBinding()
 	//In case it's been already removed - dont do it again
 	if (!bRemovedBinding)
 	{
-		//9 - Move - LeftMouseButton
+		//9 - LeftMouseButtonActions - LEFTMOUSEBUTTONACTION_ID
 		//TODO find a way to get FInputActionBinding with a NAME, not int
 		//use BindingToRemove.GetActionName().ToString() to get name, maybe there's something in it
 		//compare to all bindings and find the one (MOVE) to remove
-		InputComponent->RemoveActionBinding(9);
+		InputComponent->RemoveActionBinding(LEFTMOUSEBUTTONACTION_ID);
 		bRemovedBinding = true;
 	}
 }
@@ -136,6 +138,11 @@ void ARTSPlayerController::AddBindingBack()
 	//OR it got canceled - then bring back old binding
 	if (bRemovedBinding)
 	{
+		//TODO fix
+		//Adding this line prevents from adding additional useless bindings
+		//But unables to use User_HUD Move input
+		InputComponent->RemoveActionBinding(LEFTMOUSEBUTTONACTION_ID);
+		
 		InputComponent->AddActionBinding(RemovedMoveBinding);
 		bRemovedBinding = false;
 	}
@@ -157,6 +164,11 @@ void ARTSPlayerController::ChangeBinding(int32 BindingIndex)
 void ARTSPlayerController::SetAidValue(bool bNewAidValue)
 {
 	bAidValue = bNewAidValue;
+}
+
+ABuilding* ARTSPlayerController::GetSelectedBuilding()
+{
+	return BuildingPtr;
 }
 
 void ARTSPlayerController::ZoomIn()
@@ -191,7 +203,7 @@ void ARTSPlayerController::FinishSelecting()
 void ARTSPlayerController::LeftMouseButtonActions()
 {
 	if (!HUDPtr) { return; }
-
+	
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit))
 	{
@@ -238,6 +250,7 @@ void ARTSPlayerController::ReleaseUnits()
 		UE_LOG(LogTemp, Warning, TEXT("RELEASING"));
 		BuildingPtr->ReleaseUnits();
 	}
+	this->AddBindingBack();
 }
 
 void ARTSPlayerController::Knife()

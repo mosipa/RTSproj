@@ -39,6 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetAidValue(bool bNewAidValue);
 
+	UFUNCTION(BlueprintCallable)
+		class ABuilding* GetSelectedBuilding();
+
 protected:
 	void Select();
 
@@ -72,4 +75,6 @@ private:
 
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;
+
+	const int32 LEFTMOUSEBUTTONACTION_ID = 9;
 };
