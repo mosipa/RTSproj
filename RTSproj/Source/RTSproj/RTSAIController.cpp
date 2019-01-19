@@ -61,9 +61,7 @@ void ARTSAIController::EnterBuilding(ABuilding* Building)
 	FVector MoveTo = Building->GetRootComponent()->GetComponentLocation();
 	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
 	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
-	//TODO adjust timer - doesnt work well for units that are behind building
-	//Maybe dotproduct to determine from which direction unit's approaches building 
-	float RequiredTime = Distance / MaxSpd + .5f;
+	float RequiredTime = Distance / MaxSpd ;
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
 
@@ -89,9 +87,18 @@ void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding)
 			PlayerUnit->SetActorEnableCollision(false);
 
 			TargetBuilding->UnitEntered(PlayerUnit);
+
+			//TODO unselect unit that entered building
+
+			bUnitBusy = false;
+			GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);			
 		}
 	}
-	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	else
+	{
+		this->EnterBuilding(TargetBuilding);
+	}
+	
 }
 
 void ARTSAIController::Knife(FHitResult Hit)

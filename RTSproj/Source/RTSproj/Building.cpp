@@ -4,7 +4,6 @@
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 #include "RTSPlayerUnit.h"
-#include "RTSAIController.h"
 
 // Sets default values
 ABuilding::ABuilding()

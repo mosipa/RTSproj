@@ -188,32 +188,38 @@ void ARTSPlayerController::FinishSelecting()
 void ARTSPlayerController::Move()
 {
 	if (!HUDPtr) { return; }
-	if (HUDPtr->GetSelectedActors().Num() > 0)
+
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit))
 	{
-		TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();
-
-		FHitResult Hit;
-		GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit);
-
-		for (auto Actor : SelectedActors)
+		if (HUDPtr->GetSelectedActors().Num() > 0)
 		{
-			//If character was selected but died in process 
-			//or is inside building dont give him an order
-			if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
-				&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
+			TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();
+
+			for (auto Actor : SelectedActors)
 			{
-				if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
+				//If character was selected but died in process 
+				//or is inside building dont give him an order
+				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
+					&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 				{
-					ABuilding* Building = Cast<ABuilding>(Hit.GetActor());
-					Cast<ARTSAIController>(Actor->GetController())->EnterBuilding(Building);
-					//DO SMTH
-				}
-				else
-				{
-					FVector MoveTo = Hit.Location;
-					Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
+					if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
+					{
+						ABuilding* Building = Cast<ABuilding>(Hit.GetActor());
+						Cast<ARTSAIController>(Actor->GetController())->EnterBuilding(Building);
+						//DO SMTH
+					}
+					else
+					{
+						FVector MoveTo = Hit.Location;
+						Cast<ARTSAIController>(Actor->GetController())->Move(MoveTo);
+					}
 				}
 			}
+		}
+		else if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("K"));
 		}
 	}
 }
@@ -233,7 +239,8 @@ void ARTSPlayerController::Knife()
 			for (auto Actor : SelectedActors)
 			{
 				//If character was selected but died in process dont give him an order
-				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead())
+				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
+					&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 				{
 					Cast<ARTSAIController>(Actor->GetController())->Knife(Hit);
 				}
@@ -258,7 +265,8 @@ void ARTSPlayerController::Pistol()
 			for (auto Actor : SelectedActors)
 			{
 				//If character was selected but died in process dont give him an order
-				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead())
+				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
+					&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 				{
 					Cast<ARTSAIController>(Actor->GetController())->FirePistol(Hit);
 				}
@@ -282,7 +290,8 @@ void ARTSPlayerController::Aid()
 		{
 			for (auto Actor : SelectedActors)
 			{
-				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead())
+				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
+					&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 				{
 					if (this->WasInputKeyJustPressed(FKey(FName("H"))) || bAidValue)
 					{
