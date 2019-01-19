@@ -90,9 +90,11 @@ void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimu
 		//If player unit was spotted
 		//And player unit isn't dead already
 		//And player unit isn't arrested already
+		//And player unit isn't inside a building
 		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>()
 			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterDead())
-			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterArrested()))
+			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterArrested())
+			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterInBuilding()))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Sensed: %s"), *(SensedActor->GetName()));
 			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);

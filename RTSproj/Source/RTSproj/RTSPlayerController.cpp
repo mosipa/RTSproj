@@ -250,7 +250,6 @@ void ARTSPlayerController::ReleaseUnits()
 		UE_LOG(LogTemp, Warning, TEXT("RELEASING"));
 		BuildingPtr->ReleaseUnits();
 	}
-	this->AddBindingBack();
 }
 
 void ARTSPlayerController::Knife()

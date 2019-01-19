@@ -7,7 +7,6 @@
 #include "Projectile.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
-#include "RTSCharacter.h"
 #include "RTSPlayerUnit.h"
 #include "MyMathClass.h"
 
@@ -18,7 +17,7 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	Pawn = Cast<AEnemyAIController>(OwnerComp.GetOwner())->GetPawn();
 	if (!Pawn) { return EBTNodeResult::Failed; }
 	
-	auto Target = Cast<ARTSCharacter>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
+	auto Target = Cast<ARTSPlayerUnit>(BlackboardComponent->GetValueAsObject("PlayerUnitKey"));
 	FVector TargetLocation = Target->GetActorLocation();
 
 	float Distance = MyMathClass::GetDistance(Pawn->GetActorLocation(), TargetLocation);
@@ -40,24 +39,21 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	bool bInRange = BlackboardComponent->GetValueAsBool("PlayerInRange");
 	bool bInSight = BlackboardComponent->GetValueAsBool("PlayerInSight");
 
-	if (bInSight)
+	if (bInSight && bInRange && !Target->IsCharacterInBuilding())
 	{
-		if (bInRange)
-		{
-			//Rotate AI to face Enemy 
-			FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
-			Pawn->SetActorRotation(BodyRotation);
+		//Rotate AI to face Enemy 
+		FRotator BodyRotation = UKismetMathLibrary::FindLookAtRotation(Pawn->GetActorLocation(), Target->GetActorLocation());
+		Pawn->SetActorRotation(BodyRotation);
 
-			Pawn->GetMovementComponent()->StopMovementImmediately();
+		Pawn->GetMovementComponent()->StopMovementImmediately();
 
-			auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-				Pawn->GetActorLocation() + Pawn->GetActorForwardVector() * 100.f,
-				Pawn->GetActorRotation()
-				);
+		auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+			Pawn->GetActorLocation() + Pawn->GetActorForwardVector() * 100.f,
+			Pawn->GetActorRotation()
+			);
 
-			if (!Projectile) { return EBTNodeResult::Aborted; }
-			Projectile->LaunchProjectile();
-		}
+		if (!Projectile) { return EBTNodeResult::Aborted; }
+		Projectile->LaunchProjectile();
 	}
 	else if (!bInSight)
 	{
@@ -67,7 +63,9 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 	}
 
 	//If fugitive dies clear all keys
-	if (Target->IsCharacterDead())
+	//Or it enters building
+	if (Target->IsCharacterDead()
+		|| Target->IsCharacterInBuilding())
 	{
 		BlackboardComponent->ClearValue("PlayerUnitKey");
 		BlackboardComponent->ClearValue("PlayerUnitOnMove");

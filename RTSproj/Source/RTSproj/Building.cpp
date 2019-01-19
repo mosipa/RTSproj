@@ -31,14 +31,20 @@ ABuilding::ABuilding()
 
 void ABuilding::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
-	PlayerUnit->SetInBuildingsRange(true, this);
+	if (OtherActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
+	{
+		ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
+		PlayerUnit->SetInBuildingsRange(true, this);
+	}
 }
 
 void ABuilding::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
-	PlayerUnit->SetInBuildingsRange(false, nullptr);
+	if (OtherActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
+	{
+		ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
+		PlayerUnit->SetInBuildingsRange(false, nullptr);
+	}
 }
 
 void ABuilding::ReleaseUnits()
