@@ -29,29 +29,29 @@ ABuilding::ABuilding()
 	UnitsInside.Empty();
 }
 
-// Called when the game starts or when spawned
-void ABuilding::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void ABuilding::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void ABuilding::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s"), *(OtherActor->GetName()));
 	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
 	PlayerUnit->SetInBuildingsRange(true, this);
 }
 
 void ABuilding::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s"), *(OtherActor->GetName()));
 	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
 	PlayerUnit->SetInBuildingsRange(false, nullptr);
+}
+
+void ABuilding::ReleaseUnits()
+{
+	//TODO units may be stuck due to number of units that reappear
+	//find a way to prevent this from happening
+	for (ARTSPlayerUnit* PlayerUnit : UnitsInside)
+	{
+		PlayerUnit->HealthBarInvisible(false);
+		PlayerUnit->SetInBuilding(false);
+		PlayerUnit->SetActorHiddenInGame(false);
+		PlayerUnit->SetActorEnableCollision(true);
+	}
+
+	UnitsInside.Empty();
 }

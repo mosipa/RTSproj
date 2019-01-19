@@ -44,7 +44,7 @@ protected:
 
 	void FinishSelecting();
 
-	void Move();
+	void LeftMouseButtonActions();
 
 	void Knife();
 
@@ -56,6 +56,8 @@ protected:
 
 	void ZoomOut();
 
+	void ReleaseUnits();
+
 private:
 	class ARTSHud* HUDPtr;
 
@@ -65,6 +67,8 @@ private:
 
 	bool bRemovedBinding;
 	bool bAidValue;
+
+	class ABuilding* BuildingPtr;
 
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;

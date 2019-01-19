@@ -108,7 +108,8 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Pistol", IE_Pressed, this, &ARTSPlayerController::Pistol);
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
 	InputComponent->BindAction("Cancel", IE_Pressed, this, &ARTSPlayerController::AddBindingBack);
-	InputComponent->BindAction("Move", IE_Pressed, this, &ARTSPlayerController::Move);
+	InputComponent->BindAction("ReleaseUnits", IE_Pressed, this, &ARTSPlayerController::ReleaseUnits);
+	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &ARTSPlayerController::LeftMouseButtonActions);
 }
 
 void ARTSPlayerController::RemoveMoveBinding()
@@ -118,11 +119,11 @@ void ARTSPlayerController::RemoveMoveBinding()
 	//In case it's been already removed - dont do it again
 	if (!bRemovedBinding)
 	{
-		//8 - Move - LeftMouseButton
+		//9 - Move - LeftMouseButton
 		//TODO find a way to get FInputActionBinding with a NAME, not int
 		//use BindingToRemove.GetActionName().ToString() to get name, maybe there's something in it
 		//compare to all bindings and find the one (MOVE) to remove
-		InputComponent->RemoveActionBinding(8);
+		InputComponent->RemoveActionBinding(9);
 		bRemovedBinding = true;
 	}
 }
@@ -177,6 +178,8 @@ void ARTSPlayerController::Select()
 	if (!HUDPtr) { return; }
 	HUDPtr->InitialPoint = HUDPtr->GetMousePosition2D();
 	HUDPtr->bStartSelecting = true;
+
+	BuildingPtr = nullptr;
 }
 
 void ARTSPlayerController::FinishSelecting()
@@ -185,7 +188,7 @@ void ARTSPlayerController::FinishSelecting()
 	HUDPtr->bStartSelecting = false;
 }
 
-void ARTSPlayerController::Move()
+void ARTSPlayerController::LeftMouseButtonActions()
 {
 	if (!HUDPtr) { return; }
 
@@ -195,6 +198,7 @@ void ARTSPlayerController::Move()
 		//If there are any units under selection
 		if (HUDPtr->GetSelectedActors().Num() > 0)
 		{
+			BuildingPtr = nullptr;
 			TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();
 
 			for (auto Actor : SelectedActors)
@@ -221,8 +225,18 @@ void ARTSPlayerController::Move()
 		}
 		else if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("K"));
+			BuildingPtr = Cast<ABuilding>(Hit.GetActor());
+			UE_LOG(LogTemp, Warning, TEXT("Building %s seleceted"), *(BuildingPtr->GetName()));
 		}
+	}
+}
+
+void ARTSPlayerController::ReleaseUnits()
+{
+	if (BuildingPtr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RELEASING"));
+		BuildingPtr->ReleaseUnits();
 	}
 }
 
