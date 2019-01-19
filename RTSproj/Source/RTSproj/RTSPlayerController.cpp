@@ -192,6 +192,7 @@ void ARTSPlayerController::Move()
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit))
 	{
+		//If there are any units under selection
 		if (HUDPtr->GetSelectedActors().Num() > 0)
 		{
 			TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();
@@ -206,8 +207,7 @@ void ARTSPlayerController::Move()
 					if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
 					{
 						ABuilding* Building = Cast<ABuilding>(Hit.GetActor());
-						Cast<ARTSAIController>(Actor->GetController())->EnterBuilding(Building);
-						//DO SMTH
+						Cast<ARTSAIController>(Actor->GetController())->EnterBuilding(Building, HUDPtr);
 					}
 					else
 					{
@@ -216,6 +216,8 @@ void ARTSPlayerController::Move()
 					}
 				}
 			}
+		//If there aren't any units under selection
+		//And we point at building
 		}
 		else if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
 		{
@@ -227,7 +229,7 @@ void ARTSPlayerController::Move()
 void ARTSPlayerController::Knife()
 {
 	if (!HUDPtr) { return; }
-
+	
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
 		TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();

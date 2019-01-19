@@ -53,4 +53,23 @@ FVector2D ARTSHud::GetMousePosition2D()
 	return FVector2D(PosX, PosY);
 }
 
+void ARTSHud::RemoveUnitFromSelection()
+{
+	TArray<class ARTSPlayerUnit*> ActorsToSelect;
 
+	for (auto Character : SelectedActors)
+	{
+		//If character is in building - unselect
+		if (Character->IsCharacterInBuilding())
+		{
+			Character->Unselect();
+		}
+		//If not keep selection
+		else
+		{
+			ActorsToSelect.Add(Character);
+		}
+	}
+	
+	SelectedActors = ActorsToSelect;
+}

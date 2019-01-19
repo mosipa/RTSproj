@@ -13,6 +13,7 @@
 #include "Building.h"
 #include "RTSPlayerUnit.h"
 #include "Runtime/Engine/Public/TimerManager.h"
+#include "RTSHud.h"
 
 ARTSAIController::ARTSAIController()
 {
@@ -45,7 +46,7 @@ void ARTSAIController::PerformMove()
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 }
 
-void ARTSAIController::EnterBuilding(ABuilding* Building)
+void ARTSAIController::EnterBuilding(ABuilding* Building, ARTSHud* HUDPtr)
 {
 	FTimerDelegate PerformDelegate;
 
@@ -65,12 +66,12 @@ void ARTSAIController::EnterBuilding(ABuilding* Building)
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
 
-	PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building);
+	PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building, HUDPtr);
 
 	GetWorld()->GetTimerManager().SetTimer(EnterBuildingTimerHandle, PerformDelegate, RequiredTime, false);
 }
 
-void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding)
+void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding, ARTSHud* HUDPtr)
 {
 	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(this->GetPawn());
 
@@ -86,9 +87,11 @@ void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding)
 			PlayerUnit->SetActorHiddenInGame(true);
 			PlayerUnit->SetActorEnableCollision(false);
 
+			//Add unit to buildings array
 			TargetBuilding->UnitEntered(PlayerUnit);
 
-			//TODO unselect unit that entered building
+			//Unselect unit that enetered building
+			HUDPtr->RemoveUnitFromSelection();
 
 			bUnitBusy = false;
 			GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);			
@@ -96,7 +99,7 @@ void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding)
 	}
 	else
 	{
-		this->EnterBuilding(TargetBuilding);
+		this->EnterBuilding(TargetBuilding, HUDPtr);
 	}
 	
 }

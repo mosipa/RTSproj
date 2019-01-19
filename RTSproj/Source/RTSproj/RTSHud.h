@@ -13,7 +13,7 @@ UCLASS()
 class RTSPROJ_API ARTSHud : public AHUD
 {
 	GENERATED_BODY()
-	
+
 private:
 	TArray<class ARTSPlayerUnit*> SelectedActors;
 
@@ -28,6 +28,7 @@ public:
 
 	bool bStartSelecting = false;
 
-	FORCEINLINE TArray<class ARTSPlayerUnit*> GetSelectedActors() const {return SelectedActors;}
+	FORCEINLINE TArray<class ARTSPlayerUnit*> GetSelectedActors() const { return SelectedActors; }
 
+	void RemoveUnitFromSelection();
 };

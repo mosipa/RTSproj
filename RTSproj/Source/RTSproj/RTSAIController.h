@@ -38,7 +38,7 @@ public:
 
 	void Aid(FHitResult Hit, EUnitState UnitState);
 
-	void EnterBuilding(class ABuilding* Building);
+	void EnterBuilding(class ABuilding* Building, class ARTSHud* HUDPtr);
 
 private:
 	bool bUnitBusy;
@@ -71,7 +71,7 @@ private:
 		void PerformMove();
 
 	UFUNCTION()
-		void PerformEnterBuilding(class ABuilding* TargetBuilding);
+		void PerformEnterBuilding(class ABuilding* TargetBuilding, class ARTSHud* HUDPtr);
 
 	EUnitState InteralUnitState;
 
