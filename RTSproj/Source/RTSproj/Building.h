@@ -6,8 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Building.generated.h"
 
-//TODO MAKE THIS CLASS ABSTRACT
-UCLASS()
+UCLASS(abstract)
 class RTSPROJ_API ABuilding : public AActor
 {
 	GENERATED_BODY()
@@ -23,7 +22,7 @@ public:
 	
 	FORCEINLINE void UnitEntered(class ARTSPlayerUnit* Unit) { UnitsInside.Add(Unit); }
 
-	FORCEINLINE virtual	void ReleaseUnits() { }
+	virtual	void ReleaseUnits() PURE_VIRTUAL(&ABuilding::ReleaseUnits,);
 
 protected:
 	TArray<class ARTSPlayerUnit*> UnitsInside;

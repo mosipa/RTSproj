@@ -19,7 +19,7 @@ public:
 
 	virtual void ReleaseUnits() override;
 
-	FVector GetPrisonLocation();
+	FORCEINLINE FVector GetPrisonLocation() { return this->GetRootComponent()->GetComponentLocation(); }
 
 private:
 	bool bIsAnyUnitInside;

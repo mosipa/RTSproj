@@ -27,8 +27,3 @@ void APrison::ReleaseUnits()
 		UnitsInside.Empty();
 	}
 }
-
-FVector APrison::GetPrisonLocation()
-{
-	return this->GetRootComponent()->GetComponentLocation();
-}
