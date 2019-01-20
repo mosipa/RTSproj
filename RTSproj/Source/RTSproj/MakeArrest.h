@@ -20,15 +20,18 @@ public:
 private:
 	UBlackboardComponent* BlackboardComponent;
 	APawn* Pawn;
-	AActor* Target;
+	class ARTSPlayerUnit* Target;
+	class APrison* Prison;
 
-	//TODO get location of prison from map
-	FVector PRISON_LOCATION = FVector(-380.f, 0.f, 170.f);
-
+	FVector PRISON_LOCATION;
+	
 	UFUNCTION()
 		void PutCollisionBackOn();
 
 	FTimerHandle CollisionTimerHandle;
 
 	bool bCollisionToggle = false;
+	bool bFindPrisonLocation = false;
+
+	void FindPrisonLocation();
 };

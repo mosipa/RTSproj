@@ -19,6 +19,8 @@ public:
 
 	virtual void ReleaseUnits() override;
 
+	FVector GetPrisonLocation();
+
 private:
 	bool bIsAnyUnitInside;
 };
