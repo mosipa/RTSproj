@@ -10,6 +10,8 @@
 #include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 #include "Runtime/Engine/Classes/Components/InputComponent.h"
 #include "Building.h"
+#include "Prison.h"
+#include "PlayersHideout.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -19,7 +21,7 @@ ARTSPlayerController::ARTSPlayerController()
 	bRemovedBinding = false;
 	bAidValue = false;
 
-	BuildingPtr = nullptr;
+	HideoutPtr = nullptr;
 
 	ConstructorHelpers::FClassFinder<UUserWidget> CHUserHUD_BP(TEXT("/Game/Blueprints/UserHUD_BP"));
 	if (CHUserHUD_BP.Succeeded())
@@ -166,9 +168,9 @@ void ARTSPlayerController::SetAidValue(bool bNewAidValue)
 	bAidValue = bNewAidValue;
 }
 
-ABuilding* ARTSPlayerController::GetSelectedBuilding()
+APlayersHideout* ARTSPlayerController::GetSelectedBuilding()
 {
-	return BuildingPtr;
+	return HideoutPtr;
 }
 
 void ARTSPlayerController::ZoomIn()
@@ -191,7 +193,7 @@ void ARTSPlayerController::Select()
 	HUDPtr->InitialPoint = HUDPtr->GetMousePosition2D();
 	HUDPtr->bStartSelecting = true;
 
-	BuildingPtr = nullptr;
+	HideoutPtr = nullptr;
 }
 
 void ARTSPlayerController::FinishSelecting()
@@ -210,7 +212,8 @@ void ARTSPlayerController::LeftMouseButtonActions()
 		//If there are any units under selection
 		if (HUDPtr->GetSelectedActors().Num() > 0)
 		{
-			BuildingPtr = nullptr;
+			HideoutPtr = nullptr;
+
 			TArray<ARTSPlayerUnit*> SelectedActors = HUDPtr->GetSelectedActors();
 
 			for (auto Actor : SelectedActors)
@@ -220,10 +223,19 @@ void ARTSPlayerController::LeftMouseButtonActions()
 				if (!Cast<ARTSPlayerUnit>(Actor)->IsCharacterDead()
 					&& !Cast<ARTSPlayerUnit>(Actor)->IsCharacterInBuilding())
 				{
-					if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
+					//If units are under selection
+					//And we point at player's hideout
+					if (Hit.GetActor()->GetClass()->IsChildOf<APlayersHideout>())
 					{
-						ABuilding* Building = Cast<ABuilding>(Hit.GetActor());
-						Cast<ARTSAIController>(Actor->GetController())->EnterBuilding(Building, HUDPtr);
+						APlayersHideout* Building = Cast<APlayersHideout>(Hit.GetActor());
+						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Building, HUDPtr, EUnitState::Entering);
+					}
+					//If units are under selection
+					//And we point at prison
+					else if (Hit.GetActor()->GetClass()->IsChildOf<APrison>())
+					{
+						APrison* Prison = Cast<APrison>(Hit.GetActor());
+						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Prison, nullptr, EUnitState::Releasing);
 					}
 					else
 					{
@@ -235,20 +247,20 @@ void ARTSPlayerController::LeftMouseButtonActions()
 		//If there aren't any units under selection
 		//And we point at building
 		}
-		else if (Hit.GetActor()->GetClass()->IsChildOf<ABuilding>())
+		else if (Hit.GetActor()->GetClass()->IsChildOf<APlayersHideout>())
 		{
-			BuildingPtr = Cast<ABuilding>(Hit.GetActor());
-			UE_LOG(LogTemp, Warning, TEXT("Building %s seleceted"), *(BuildingPtr->GetName()));
+			HideoutPtr = Cast<APlayersHideout>(Hit.GetActor());
+			UE_LOG(LogTemp, Warning, TEXT("Building %s seleceted"), *(HideoutPtr->GetName()));
 		}
 	}
 }
 
 void ARTSPlayerController::ReleaseUnits()
 {
-	if (BuildingPtr)
+	if (HideoutPtr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("RELEASING"));
-		BuildingPtr->ReleaseUnits();
+		HideoutPtr->ReleaseUnits();
 	}
 }
 

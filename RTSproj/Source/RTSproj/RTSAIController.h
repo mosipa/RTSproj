@@ -14,7 +14,9 @@ enum class EUnitState : uint8
 	Knifing,
 	FiringGun,
 	Cleansing,
-	Healing
+	Healing,
+	Releasing,
+	Entering
 };
 
 UCLASS()
@@ -38,7 +40,7 @@ public:
 
 	void Aid(FHitResult Hit, EUnitState UnitState);
 
-	void EnterBuilding(class ABuilding* Building, class ARTSHud* HUDPtr);
+	void GetCloserToBuilding(class ABuilding* Building, class ARTSHud* HUDPtr, EUnitState UnitState);
 
 private:
 	bool bUnitBusy;
@@ -71,7 +73,10 @@ private:
 		void PerformMove();
 
 	UFUNCTION()
-		void PerformEnterBuilding(class ABuilding* TargetBuilding, class ARTSHud* HUDPtr);
+		void PerformEnterBuilding(class APlayersHideout* TargetBuilding, class ARTSHud* HUDPtr);
+
+	UFUNCTION()
+		void PerformReleasePrisoners(class APrison* Prison);
 
 	EUnitState InteralUnitState;
 

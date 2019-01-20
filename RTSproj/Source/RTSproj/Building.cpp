@@ -1,16 +1,12 @@
 // MOsipa 2018
 
 #include "Building.h"
+#include "RTSPlayerUnit.h"
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
-#include "RTSPlayerUnit.h"
 
-// Sets default values
 ABuilding::ABuilding()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(FName("CollisionComponent"));
 	CollisionComponent->InitCapsuleSize(75.f, 100.f);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -44,23 +40,5 @@ void ABuilding::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	{
 		ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(OtherActor);
 		PlayerUnit->SetInBuildingsRange(false, nullptr);
-	}
-}
-
-void ABuilding::ReleaseUnits()
-{
-	//TODO units may be stuck due to number of units that reappear
-	//find a way to prevent this from happening
-	if (UnitsInside.Num() > 0)
-	{
-		for (ARTSPlayerUnit* PlayerUnit : UnitsInside)
-		{
-			PlayerUnit->HealthBarInvisible(false);
-			PlayerUnit->SetInBuilding(false);
-			PlayerUnit->SetActorHiddenInGame(false);
-			PlayerUnit->SetActorEnableCollision(true);
-		}
-
-		UnitsInside.Empty();
 	}
 }

@@ -40,7 +40,7 @@ public:
 		void SetAidValue(bool bNewAidValue);
 
 	UFUNCTION(BlueprintCallable)
-		class ABuilding* GetSelectedBuilding();
+		class APlayersHideout* GetSelectedBuilding();
 
 protected:
 	void Select();
@@ -71,7 +71,7 @@ private:
 	bool bRemovedBinding;
 	bool bAidValue;
 
-	class ABuilding* BuildingPtr;
+	class APlayersHideout* HideoutPtr;
 
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;

@@ -14,6 +14,8 @@
 #include "RTSPlayerUnit.h"
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "RTSHud.h"
+#include "Prison.h"
+#include "PlayersHideout.h"
 
 ARTSAIController::ARTSAIController()
 {
@@ -46,7 +48,7 @@ void ARTSAIController::PerformMove()
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 }
 
-void ARTSAIController::EnterBuilding(ABuilding* Building, ARTSHud* HUDPtr)
+void ARTSAIController::GetCloserToBuilding(ABuilding* Building, ARTSHud* HUDPtr, EUnitState UnitState)
 {
 	FTimerDelegate PerformDelegate;
 
@@ -66,12 +68,19 @@ void ARTSAIController::EnterBuilding(ABuilding* Building, ARTSHud* HUDPtr)
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
 
-	PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building, HUDPtr);
-
+	if (UnitState == EUnitState::Entering)
+	{
+		PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building, HUDPtr);
+	}
+	else if (UnitState == EUnitState::Releasing)
+	{
+		PerformDelegate.BindUFunction(this, FName("PerformReleasePrisoners"), Building);
+	}
+	
 	GetWorld()->GetTimerManager().SetTimer(EnterBuildingTimerHandle, PerformDelegate, RequiredTime, false);
 }
 
-void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding, ARTSHud* HUDPtr)
+void ARTSAIController::PerformEnterBuilding(APlayersHideout* TargetBuilding, ARTSHud* HUDPtr)
 {
 	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(this->GetPawn());
 
@@ -99,9 +108,28 @@ void ARTSAIController::PerformEnterBuilding(ABuilding* TargetBuilding, ARTSHud* 
 	}
 	else
 	{
-		this->EnterBuilding(TargetBuilding, HUDPtr);
+		this->GetCloserToBuilding(TargetBuilding, HUDPtr, EUnitState::Entering);
 	}
 	
+}
+
+void ARTSAIController::PerformReleasePrisoners(APrison* Prison)
+{
+	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(this->GetPawn());
+
+	if (PlayerUnit->IsCharacterInBuildingsRange()
+		&& PlayerUnit->GetNearestBuilding()
+		&& Prison)
+	{
+		if (PlayerUnit->GetNearestBuilding()->GetName().Equals(Prison->GetName()))
+		{
+			Prison->ReleaseUnits();
+		}
+	}
+	else
+	{
+		this->GetCloserToBuilding(Prison, nullptr, EUnitState::Releasing);
+	}
 }
 
 void ARTSAIController::Knife(FHitResult Hit)

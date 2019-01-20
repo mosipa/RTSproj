@@ -6,13 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Building.generated.h"
 
+//TODO MAKE THIS CLASS ABSTRACT
 UCLASS()
 class RTSPROJ_API ABuilding : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ABuilding();
 
 	UFUNCTION()
@@ -20,19 +20,17 @@ public:
 
 	UFUNCTION()
 		void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-public:	
+	
 	FORCEINLINE void UnitEntered(class ARTSPlayerUnit* Unit) { UnitsInside.Add(Unit); }
 
-	UFUNCTION(BlueprintCallable)
-		void ReleaseUnits();
+	FORCEINLINE virtual	void ReleaseUnits() { }
 
-private:
+protected:
+	TArray<class ARTSPlayerUnit*> UnitsInside;
+
 	UPROPERTY(VisibleAnywhere)
 		class UCapsuleComponent* CollisionComponent = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* BaseMesh = nullptr;
-
-	TArray<class ARTSPlayerUnit*> UnitsInside;
 };
