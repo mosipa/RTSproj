@@ -4,7 +4,7 @@
 #include "EnemyAIController.h"
 #include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
-#include "Projectile.h"
+#include "RTSEnemyUnit.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "RTSPlayerUnit.h"
@@ -47,13 +47,8 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 
 		Pawn->GetMovementComponent()->StopMovementImmediately();
 
-		auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-			Pawn->GetActorLocation() + Pawn->GetActorForwardVector() * 100.f,
-			Pawn->GetActorRotation()
-			);
-
-		if (!Projectile) { return EBTNodeResult::Aborted; }
-		Projectile->LaunchProjectile();
+		//Shooting
+		Cast<ARTSEnemyUnit>(Pawn)->Shoot();
 	}
 	else if (!bInSight)
 	{
