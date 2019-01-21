@@ -19,7 +19,7 @@ public:
 
 	FORCEINLINE TArray<AActor*> GetPatrolPoints() { return PatrolPoints; }
 
-	void Shoot();
+	virtual void Shoot() override;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Patrol")

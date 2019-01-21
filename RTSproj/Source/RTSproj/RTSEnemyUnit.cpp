@@ -2,7 +2,6 @@
 
 #include "RTSEnemyUnit.h"
 #include "Engine/World.h"
-#include "Projectile.h"
 
 ARTSEnemyUnit::ARTSEnemyUnit()
 {
@@ -12,17 +11,10 @@ ARTSEnemyUnit::ARTSEnemyUnit()
 
 void ARTSEnemyUnit::Shoot()
 {
-	//TODO make gun actor and then check if unit has a gun, and on gun check if its on cooldown
 	//Check if gun is on cooldown
 	if (CheckCooldown())
 	{
-		auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-			this->GetActorLocation() + this->GetActorForwardVector() * 100.f,
-			this->GetActorRotation()
-			);
-
-		if (!Projectile) { return; }
-		Projectile->LaunchProjectile();
+		Super::Shoot();
 
 		LastFired = GetWorld()->GetTimeSeconds();
 	}

@@ -8,7 +8,6 @@
 #include "GameFramework/DamageType.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
-#include "Projectile.h"
 #include "MyMathClass.h"
 #include "Building.h"
 #include "RTSPlayerUnit.h"
@@ -273,13 +272,7 @@ void ARTSAIController::PerformAttack()
 			{
 				this->GetPawn()->GetMovementComponent()->StopMovementImmediately();
 
-				auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-					this->GetPawn()->GetActorLocation() + this->GetPawn()->GetActorForwardVector() * 100.f,
-					this->GetPawn()->GetActorRotation()
-					);
-
-				if (!Projectile) { return; }
-				Projectile->LaunchProjectile();
+				Cast<ARTSPlayerUnit>(this->GetPawn())->Shoot();
 
 				//IMPORTANT:
 				//only clear those values AFTER attack has been performed!

@@ -44,6 +44,10 @@ public:
 
 	void DestroyCharacter();
 	void StopBleeding();
+
+	//TODO make gun actor and then check if unit has a gun, and on gun check if it's on cooldown
+	virtual void Shoot();
+
 protected:
 	/** A decal that projects to the cursor location. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

@@ -11,6 +11,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Projectile.h"
 
 ARTSCharacter::ARTSCharacter()
 {
@@ -144,4 +145,15 @@ void ARTSCharacter::DestroyCharacter()
 {
 	bIsDead = true;
 	this->DetachFromControllerPendingDestroy();
+}
+
+void ARTSCharacter::Shoot()
+{
+	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+		this->GetActorLocation() + this->GetActorForwardVector() * 100.f,
+		this->GetActorRotation()
+		);
+
+	if (!Projectile) { return; }
+	Projectile->LaunchProjectile();
 }
