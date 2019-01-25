@@ -41,6 +41,8 @@ void ARTSPlayerController::BeginPlay()
 	//At least to the moment I find a better way 
 	RemovedMoveBinding = InputComponent->GetActionBinding(LEFTMOUSEBUTTONACTION_ID);
 
+	//TODO create widgets here but add to playerscreen when player chooses unit
+	//As there are building which shouldn't have move/fire buttons
 	//Set UserHUD
 	UserWidget = CreateWidget<UUserWidget>(this, UWClass);
 	if (UserWidget)
@@ -142,7 +144,7 @@ void ARTSPlayerController::AddBindingBack()
 	{
 		//TODO fix
 		//Adding this line prevents from adding additional useless bindings
-		//But unables to use User_HUD Move input
+		//But causes user to being unable using User_HUD Move button (input)
 		InputComponent->RemoveActionBinding(LEFTMOUSEBUTTONACTION_ID);
 		
 		InputComponent->AddActionBinding(RemovedMoveBinding);

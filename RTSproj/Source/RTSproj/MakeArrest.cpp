@@ -14,6 +14,8 @@
 #include "Engine/World.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Prison.h"
+#include "RTSPlayerController.h"
+#include "RTSHud.h"
 
 EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -94,9 +96,10 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 				if (Prison)
 				{
 					Prison->UnitEntered(Target);
-				}
 
-				//TODO cancel selection of unit that just went to the prison
+					//Remove captured unit from selection
+					Cast<ARTSHud>(Cast<ARTSPlayerController>(GetWorld()->GetFirstPlayerController())->GetHUD())->RemoveUnitFromSelection();
+				}
 
 				BlackboardComponent->ClearValue("PlayerUnitKey");
 				BlackboardComponent->ClearValue("PlayerUnitOnMove");
