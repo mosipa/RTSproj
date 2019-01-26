@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
 #include "GuardTower.generated.h"
 
 UCLASS()
-class RTSPROJ_API AGuardTower : public AActor
+class RTSPROJ_API AGuardTower : public APawn
 {
 	GENERATED_BODY()
 	
