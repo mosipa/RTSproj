@@ -21,6 +21,8 @@ public:
 	UFUNCTION()
 		void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	void PrepareToFire(class ARTSPlayerUnit* PlayerUnit);
+
 protected:
 	TArray<class ARTSPlayerUnit*> UnitsInside;
 
@@ -29,4 +31,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* BaseMesh = nullptr;
+
+private:
+	UFUNCTION()
+		void OpenFire();
+
+	float PrepareTime;
+
+	FTimerHandle ShootTimerHandle;
 };

@@ -4,7 +4,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "AIModule/Classes/Perception/AIPerceptionComponent.h"
 #include "AIModule/Classes/Perception/AISenseConfig_Sight.h"
-#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "GuardTower.h"
+#include "RTSPlayerUnit.h"
 
 AGuardTowerController::AGuardTowerController()
 {
@@ -37,9 +38,14 @@ void AGuardTowerController::OnTargetPerceptionUpdated(AActor* SensedActor, FAISt
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		if (SensedActor)
+		//If SensedActor is PlayerUnit's class
+		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Sensed actor: %s by %s"), *(SensedActor->GetName()), *(this->GetName()));
+			//TODO Only shoot when enemy AI enters building
+			//if(this->GetPawn()->UnitsInTower array.num > 0
+
+			//TODO shooting only once not till unit dies - fix
+			Cast<AGuardTower>(this->GetPawn())->PrepareToFire(Cast<ARTSPlayerUnit>(SensedActor));
 		}
 	}
 }
