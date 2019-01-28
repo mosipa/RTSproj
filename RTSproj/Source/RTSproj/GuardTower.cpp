@@ -36,6 +36,11 @@ AGuardTower::AGuardTower()
 	PrepareTime = .5f;
 }
 
+void AGuardTower::UnitEntered(ARTSEnemyUnit* EnemyUnit)
+{
+	this->UnitsInside.Add(EnemyUnit);
+}
+
 void AGuardTower::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Overlapping GuardTower: %s"), *(this->GetName()));
@@ -57,7 +62,6 @@ void AGuardTower::PrepareToFire(ARTSPlayerUnit* PlayerUnit)
 	PerformDelegate.BindUFunction(this, FName("OpenFire"), PlayerUnit);
 
 	GetWorld()->GetTimerManager().SetTimer(ShootTimerHandle, PerformDelegate, PrepareTime, false);
-	//GetWorld()->GetTimerManager().SetTimer(ShootTimerHandle, this, &AGuardTower::OpenFire, PrepareTime, false);
 }
 
 void AGuardTower::OpenFire(ARTSPlayerUnit* PlayerUnit)

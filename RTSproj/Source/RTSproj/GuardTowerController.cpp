@@ -39,15 +39,16 @@ void AGuardTowerController::OnTargetPerceptionUpdated(AActor* SensedActor, FAISt
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		//If SensedActor is PlayerUnit's class
-		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
+		//If any enemy units are in building
+		if (Cast<AGuardTower>(this->GetPawn())->IsAnybodyInside())
 		{
-			//TODO Only shoot when enemy AI enters building
-			//if(this->GetPawn()->UnitsInTower > 0
-
-			//TODO shooting only once not till unit dies - fix
-			//TODO create BT + tasks for GuardTowerController and in tasks force it to shoot
-			Cast<AGuardTower>(this->GetPawn())->PrepareToFire(Cast<ARTSPlayerUnit>(SensedActor));
+			//If SensedActor is PlayerUnit's class
+			if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
+			{
+				//TODO shooting only once not till unit dies - fix
+				//TODO create BT + tasks for GuardTowerController and in tasks force it to shoot
+				Cast<AGuardTower>(this->GetPawn())->PrepareToFire(Cast<ARTSPlayerUnit>(SensedActor));
+			}
 		}
 	}
 }

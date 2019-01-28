@@ -23,8 +23,11 @@ public:
 
 	void PrepareToFire(class ARTSPlayerUnit* PlayerUnit);
 
+	void UnitEntered(class ARTSEnemyUnit* EnemyUnit);
+	FORCEINLINE bool IsAnybodyInside() { return (this->UnitsInside.Num() != 0); }
+
 protected:
-	TArray<class ARTSPlayerUnit*> UnitsInside;
+	TArray<class ARTSEnemyUnit*> UnitsInside;
 
 	UPROPERTY(VisibleAnywhere)
 		class UCapsuleComponent* CollisionComponent = nullptr;

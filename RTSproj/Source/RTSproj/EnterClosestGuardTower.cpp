@@ -5,6 +5,7 @@
 #include "EnemyAIController.h"
 #include "GuardTower.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
+#include "RTSEnemyUnit.h"
 
 EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -16,7 +17,8 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 	//Go to GuardTower
 	//TODO Go to nearest GuardTower
 	if (EnemyAIController->GetGuardTowersInLevel().Num() <= 0) { return EBTNodeResult::Failed; }
-	FVector GuardTowerLocation = EnemyAIController->GetGuardTowersInLevel()[0]->GetActorLocation();
+	AGuardTower* TowerToEnter = EnemyAIController->GetGuardTowersInLevel()[0];
+	FVector GuardTowerLocation = TowerToEnter->GetActorLocation();
 
 	float Distance = MyMathClass::GetDistance(EnemyAIController->GetPawn()->GetActorLocation(), GuardTowerLocation);
 
@@ -25,6 +27,7 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 	if (Distance <= 150.f)
 	{
 		//Enter Tower
+		TowerToEnter->UnitEntered(Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn()));
 		UE_LOG(LogTemp, Warning, TEXT("Entering tower"));
 	}
 
