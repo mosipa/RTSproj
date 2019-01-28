@@ -59,6 +59,19 @@ EBTNodeResult::Type UMakeArrest::ExecuteTask(UBehaviorTreeComponent & OwnerComp,
 		Cast<UCharacterMovementComponent>(Cast<APawn>(Target)->GetMovementComponent())->MaxWalkSpeed = 600.f;
 		BlackboardComponent->SetValueAsBool("PlayerUnitOnMove", true);
 		bCollisionToggle = false;
+
+		//Set key for all other AI units
+		TArray<AActor*> AllAIControllers;
+		UGameplayStatics::GetAllActorsOfClass(this, AEnemyAIController::StaticClass(), AllAIControllers);
+
+		for (auto& AI : AllAIControllers)
+		{
+			//If controller isn't the one that is currently in chase
+			if (!(AI->GetName().Equals(OwnerComp.GetOwner()->GetName())))
+			{
+				Cast<AEnemyAIController>(AI)->GetBlackboardComponent()->SetValueAsBool("Alarm", true);
+			}
+		}
 	}
 	//Player unit doesn't move so get closer
 	else if(!bPlayerUnitBehaveWierd)

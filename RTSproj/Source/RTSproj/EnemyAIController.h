@@ -20,6 +20,8 @@ class RTSPROJ_API AEnemyAIController : public AAIController
 public:
 	virtual void BeginPlay() override;
 
+	FORCEINLINE TArray<class AGuardTower*> GetGuardTowersInLevel() const { return GuardTowersInLevel; }
+
 private:
 	class UBlackboardComponent* BlackboardComponent;
 	class UBlackboardData* BlackboardAsset;
@@ -30,6 +32,11 @@ private:
 
 	virtual void Possess(APawn* Pawn) override;
 
+	//Adding to GuardsTowersInLevel all spawned GuardTowers
+	void GetAllGuardTowers();
+
 	UFUNCTION()
 		void OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimulus Stimulus);
+
+	TArray<class AGuardTower*> GuardTowersInLevel;
 };

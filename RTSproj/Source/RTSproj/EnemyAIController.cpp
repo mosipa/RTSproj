@@ -13,6 +13,8 @@
 #include "AIModule/Classes/Perception/AIPerceptionComponent.h"
 #include "AIModule/Classes/Perception/AISenseConfig_Sight.h"
 #include "RTSPlayerUnit.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "GuardTower.h"
 
 AEnemyAIController::AEnemyAIController()
 {
@@ -26,6 +28,7 @@ AEnemyAIController::AEnemyAIController()
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerInSight"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("PlayerInRange"));
 	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("LocationIsSet"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("Alarm"));
 
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
@@ -59,6 +62,8 @@ AEnemyAIController::AEnemyAIController()
 	AIPerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
 
 	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnTargetPerceptionUpdated);
+
+	GuardTowersInLevel.Empty();
 }
 
 void AEnemyAIController::Possess(APawn* Pawn)
@@ -70,6 +75,20 @@ void AEnemyAIController::Possess(APawn* Pawn)
 	if (Character)
 	{
 		BlackboardComponent->InitializeBlackboard(*BlackboardAsset);
+
+		//Get all towers in level
+		GetAllGuardTowers();
+	}
+}
+
+void AEnemyAIController::GetAllGuardTowers()
+{
+	TArray<AActor*> GuardTowers;
+	UGameplayStatics::GetAllActorsOfClass(this, AGuardTower::StaticClass(), GuardTowers);
+
+	for (auto& Tower : GuardTowers)
+	{
+		GuardTowersInLevel.Add(Cast<AGuardTower>(Tower));
 	}
 }
 
