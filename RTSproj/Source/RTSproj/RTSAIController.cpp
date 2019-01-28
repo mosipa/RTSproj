@@ -98,6 +98,8 @@ void ARTSAIController::PerformEnterBuilding(APlayersHideout* TargetBuilding, ART
 			//Add unit to buildings array
 			TargetBuilding->UnitEntered(PlayerUnit);
 
+			//TODO there's no need to give HUD as parameter
+			//simply just get fpcontroller and get hud from it
 			//Unselect unit that enetered building
 			HUDPtr->RemoveUnitFromSelection();
 

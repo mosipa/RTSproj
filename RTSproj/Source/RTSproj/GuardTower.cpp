@@ -7,6 +7,7 @@
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "RTSPlayerUnit.h"
 #include "Projectile.h"
+#include "Engine/Classes/Kismet/KismetMathLibrary.h"
 
 AGuardTower::AGuardTower()
 {
@@ -24,6 +25,10 @@ AGuardTower::AGuardTower()
 	BaseMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetRelativeScale3D(FVector(1.f, 1.f, 4.f));
 	BaseMesh->SetRelativeLocation(FVector(-50.f, 0.f, 100.f));
+
+	Peek = CreateDefaultSubobject<UStaticMeshComponent>(FName("Peek"));
+	Peek->SetupAttachment(BaseMesh);
+	Peek->SetRelativeLocation(FVector(0.f, 0.f, 65.f));
 
 	UnitsInside.Empty();
 
@@ -46,14 +51,31 @@ void AGuardTower::PrepareToFire(ARTSPlayerUnit* PlayerUnit)
 	//Clear Timer of last spotted PlayerUnit
 	GetWorld()->GetTimerManager().ClearTimer(ShootTimerHandle);
 
-	GetWorld()->GetTimerManager().SetTimer(ShootTimerHandle, this, &AGuardTower::OpenFire, PrepareTime, false);
+	FTimerDelegate PerformDelegate;
+	//TO_REMOVE
+	UE_LOG(LogTemp, Warning, TEXT("PrepToFire"));
+	PerformDelegate.BindUFunction(this, FName("OpenFire"), PlayerUnit);
+
+	GetWorld()->GetTimerManager().SetTimer(ShootTimerHandle, PerformDelegate, PrepareTime, false);
+	//GetWorld()->GetTimerManager().SetTimer(ShootTimerHandle, this, &AGuardTower::OpenFire, PrepareTime, false);
 }
 
-void AGuardTower::OpenFire()
+void AGuardTower::OpenFire(ARTSPlayerUnit* PlayerUnit)
 {
-	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+	//Set rotation of guard at peek to face PlayerUnit
+	FRotator PeekRotation = UKismetMathLibrary::FindLookAtRotation(this->Peek->GetComponentLocation(), PlayerUnit->GetActorLocation());
+	this->Peek->SetRelativeRotation(PeekRotation);
+	/*auto Projectile = GetWorld()->SpawnActor<AProjectile>(
 		this->GetActorLocation() + this->GetActorForwardVector() * 100.f,
 		this->GetActorRotation()
+		);*/
+
+	//TO_REMOVE - debugging purpose
+	UE_LOG(LogTemp, Warning, TEXT("OpenFire"));
+	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+		Projectile_BP,
+		this->Peek->GetComponentLocation() + this->Peek->GetForwardVector() * 100.f,
+		this->Peek->GetComponentRotation()
 		);
 
 	if (Projectile)

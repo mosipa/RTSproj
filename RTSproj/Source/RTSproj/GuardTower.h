@@ -32,9 +32,16 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* BaseMesh = nullptr;
 
+	//Place to shoot down at PlayerUnits
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* Peek = nullptr;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class AProjectile> Projectile_BP;
+
 private:
 	UFUNCTION()
-		void OpenFire();
+		void OpenFire(class ARTSPlayerUnit* PlayerUnit);
 
 	float PrepareTime;
 

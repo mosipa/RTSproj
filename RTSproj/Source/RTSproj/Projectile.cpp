@@ -26,7 +26,7 @@ AProjectile::AProjectile()
 	BaseMesh->SetupAttachment(RootComponent);
 
 	//Comment to make it visible
-	BaseMesh->SetVisibility(false);
+	//BaseMesh->SetVisibility(false);
 
 	ExplosionForce = CreateDefaultSubobject<URadialForceComponent>(FName("Explosion Force"));
 	ExplosionForce->Radius = 50.f;

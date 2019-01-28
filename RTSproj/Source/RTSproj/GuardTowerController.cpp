@@ -7,6 +7,7 @@
 #include "GuardTower.h"
 #include "RTSPlayerUnit.h"
 
+//TODO create BT + tasks for GuardTowerController
 AGuardTowerController::AGuardTowerController()
 {
 	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
@@ -42,9 +43,10 @@ void AGuardTowerController::OnTargetPerceptionUpdated(AActor* SensedActor, FAISt
 		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
 		{
 			//TODO Only shoot when enemy AI enters building
-			//if(this->GetPawn()->UnitsInTower array.num > 0
+			//if(this->GetPawn()->UnitsInTower > 0
 
 			//TODO shooting only once not till unit dies - fix
+			//TODO create BT + tasks for GuardTowerController and in tasks force it to shoot
 			Cast<AGuardTower>(this->GetPawn())->PrepareToFire(Cast<ARTSPlayerUnit>(SensedActor));
 		}
 	}
