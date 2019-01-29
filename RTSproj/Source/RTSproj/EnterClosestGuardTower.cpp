@@ -6,6 +6,7 @@
 #include "GuardTower.h"
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "RTSEnemyUnit.h"
+#include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 
 EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -24,11 +25,16 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(EnemyAIController, GuardTowerLocation);
 
-	if (Distance <= 150.f)
+	if (Distance <= 50.f)
 	{
 		//Enter Tower
 		TowerToEnter->UnitEntered(Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn()));
 		UE_LOG(LogTemp, Warning, TEXT("Entering tower"));
+
+		ARTSEnemyUnit* EnemyUnit = Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn());
+		//EnemyUnit->SetActorHiddenInGame(true);
+		EnemyUnit->SetActorEnableCollision(false);
+		EnemyUnit->GetMovementComponent()->StopMovementImmediately();
 	}
 
 	return EBTNodeResult::Succeeded;
