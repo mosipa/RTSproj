@@ -20,4 +20,11 @@ public:
 private:
 	UBlackboardComponent* BlackboardComponent;
 	class AEnemyAIController* EnemyAIController;
+
+	FTimerHandle ExitingTimer;
+
+	UFUNCTION()
+		void GettingOut();
+
+	bool bHasTimerStarted = false;
 };

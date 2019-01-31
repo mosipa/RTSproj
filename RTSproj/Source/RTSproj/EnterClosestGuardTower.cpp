@@ -7,6 +7,8 @@
 #include "AIModule/Classes/Blueprint/AIBlueprintHelperLibrary.h"
 #include "RTSEnemyUnit.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
+#include "Engine/World.h"
+#include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
 
 EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)
 {
@@ -27,7 +29,7 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 	ARTSEnemyUnit* EnemyUnit = Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn());
 
 	bool bIsUnitNearTower = EnemyUnit->IsNearTower();
-	UE_LOG(LogTemp, Warning, TEXT("%s, %i"), *(EnemyUnit->GetName()), bIsUnitNearTower);
+
 	if (bIsUnitNearTower)
 	{
 		//Enter Tower
@@ -35,8 +37,34 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 		EnemyUnit->SetActorHiddenInGame(true);
 		EnemyUnit->SetActorEnableCollision(false);
 		EnemyUnit->GetMovementComponent()->StopMovementImmediately();
-		UE_LOG(LogTemp, Warning, TEXT("%s in Tower"), *(EnemyUnit->GetName()));
+
+		if (!bHasTimerStarted)
+		{
+			bHasTimerStarted = true;
+			GetWorld()->GetTimerManager().SetTimer(ExitingTimer, this, &UEnterClosestGuardTower::GettingOut, 15.f, false);
+		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Entering closest tower"));
+
 	return EBTNodeResult::Succeeded;
+}
+
+void UEnterClosestGuardTower::GettingOut()
+{
+	ARTSEnemyUnit* EnemyUnit = Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn());
+	AGuardTower* TowerToLeave = EnemyUnit->GetTower();
+
+	if (TowerToLeave)
+	{
+		TowerToLeave->UnitLeft(EnemyUnit);
+
+		EnemyUnit->SetActorHiddenInGame(false);
+		EnemyUnit->SetActorEnableCollision(true);
+		EnemyUnit->InsideTower(nullptr);
+		EnemyUnit->SetNearTower(false);
+
+		bHasTimerStarted = false;
+		BlackboardComponent->ClearValue("Alarm");
+	}
+
+	GetWorld()->GetTimerManager().ClearTimer(ExitingTimer);
 }

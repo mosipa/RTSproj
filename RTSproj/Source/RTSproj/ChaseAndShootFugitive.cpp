@@ -68,6 +68,12 @@ EBTNodeResult::Type UChaseAndShootFugitive::ExecuteTask(UBehaviorTreeComponent &
 		BlackboardComponent->ClearValue("PlayerInRange");
 		BlackboardComponent->ClearValue("PlayerInSight");
 		BlackboardComponent->ClearValue("LocationIsSet");
+
+		//Additionaly if player's unit died - call off alarm
+		if (Target->IsCharacterDead())
+		{
+			BlackboardComponent->ClearValue("Alarm");
+		}
 	}
 
 	return EBTNodeResult::Succeeded;

@@ -18,7 +18,6 @@ AGuardTower::AGuardTower()
 	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AGuardTower::OnOverlapBegin);
-	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AGuardTower::OnOverlapEnd);
 
 	SetRootComponent(Cast<USceneComponent>(CollisionComponent));
 
@@ -65,17 +64,6 @@ void AGuardTower::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, clas
 	{
 		Enemy->InsideTower(Cast<AGuardTower>(OverlappedComp->GetOwner()));
 		Enemy->SetNearTower(true);
-		UE_LOG(LogTemp, Warning, TEXT("Overlapping, %i"), Enemy->IsNearTower());
-	}
-}
-
-void AGuardTower::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	ARTSEnemyUnit* Enemy = Cast<ARTSEnemyUnit>(OtherActor);
-	if (Enemy)
-	{
-		Enemy->InsideTower(nullptr);
-		Enemy->SetNearTower(false);
 	}
 }
 
