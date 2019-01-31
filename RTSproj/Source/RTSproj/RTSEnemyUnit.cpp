@@ -2,11 +2,13 @@
 
 #include "RTSEnemyUnit.h"
 #include "Engine/World.h"
+#include "GuardTower.h"
 
 ARTSEnemyUnit::ARTSEnemyUnit()
 {
 	Cooldown = 2.f;
 	LastFired = 0.f;
+	bNearTower = false;
 }
 
 void ARTSEnemyUnit::Shoot()
@@ -23,4 +25,14 @@ void ARTSEnemyUnit::Shoot()
 bool ARTSEnemyUnit::CheckCooldown()
 {
 	return ((GetWorld()->GetTimeSeconds() - LastFired) >= Cooldown);
+}
+
+void ARTSEnemyUnit::InsideTower(AGuardTower* Tower)
+{
+	InTower = Tower;
+}
+
+AGuardTower* ARTSEnemyUnit::GetTower()
+{
+	return InTower;
 }

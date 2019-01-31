@@ -20,6 +20,10 @@ public:
 	FORCEINLINE TArray<AActor*> GetPatrolPoints() { return PatrolPoints; }
 
 	virtual void Shoot() override;
+	void InsideTower(class AGuardTower* Tower);
+	class AGuardTower* GetTower();
+	FORCEINLINE void SetNearTower(bool bNear) { this->bNearTower = bNear; }
+	FORCEINLINE bool IsNearTower() { return this->bNearTower; }
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Patrol")
@@ -29,4 +33,7 @@ private:
 	float LastFired;
 
 	bool CheckCooldown();
+
+	class AGuardTower* InTower;
+	bool bNearTower;
 };

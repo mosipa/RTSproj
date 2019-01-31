@@ -24,18 +24,19 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 	float Distance = MyMathClass::GetDistance(EnemyAIController->GetPawn()->GetActorLocation(), GuardTowerLocation);
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(EnemyAIController, GuardTowerLocation);
+	ARTSEnemyUnit* EnemyUnit = Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn());
 
-	if (Distance <= 50.f)
+	bool bIsUnitNearTower = EnemyUnit->IsNearTower();
+	UE_LOG(LogTemp, Warning, TEXT("%s, %i"), *(EnemyUnit->GetName()), bIsUnitNearTower);
+	if (bIsUnitNearTower)
 	{
 		//Enter Tower
 		TowerToEnter->UnitEntered(Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn()));
-		UE_LOG(LogTemp, Warning, TEXT("Entering tower"));
-
-		ARTSEnemyUnit* EnemyUnit = Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn());
-		//EnemyUnit->SetActorHiddenInGame(true);
+		EnemyUnit->SetActorHiddenInGame(true);
 		EnemyUnit->SetActorEnableCollision(false);
 		EnemyUnit->GetMovementComponent()->StopMovementImmediately();
+		UE_LOG(LogTemp, Warning, TEXT("%s in Tower"), *(EnemyUnit->GetName()));
 	}
-
+	UE_LOG(LogTemp, Warning, TEXT("Entering closest tower"));
 	return EBTNodeResult::Succeeded;
 }

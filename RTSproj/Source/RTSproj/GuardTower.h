@@ -24,6 +24,7 @@ public:
 	void PrepareToFire(class ARTSPlayerUnit* PlayerUnit);
 
 	void UnitEntered(class ARTSEnemyUnit* EnemyUnit);
+	void UnitLeft(class ARTSEnemyUnit* EnemyUnit);
 	FORCEINLINE bool IsAnybodyInside() { return (this->UnitsInside.Num() != 0); }
 
 protected:
