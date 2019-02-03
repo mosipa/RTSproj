@@ -20,11 +20,17 @@ public:
 private:
 	UBlackboardComponent* BlackboardComponent;
 	class AEnemyAIController* EnemyAIController;
-
+	class AGuardTower* ClosestTower;
 	FTimerHandle ExitingTimer;
 
 	UFUNCTION()
 		void GettingOut();
 
+	void GetClosestTower();
+
 	bool bHasTimerStarted = false;
+	bool bHasClosestTowerSet = false;
+
+	//TODO find distance between most west and most east wall of level
+	float DistanceMin = 10000.f;
 };

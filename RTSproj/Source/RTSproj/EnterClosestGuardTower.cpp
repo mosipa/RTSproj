@@ -17,11 +17,24 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 	EnemyAIController = Cast<AEnemyAIController>(OwnerComp.GetOwner());
 	if (!EnemyAIController) { return EBTNodeResult::Failed; }
 
-	//Go to GuardTower
-	//TODO Go to nearest GuardTower
-	if (EnemyAIController->GetGuardTowersInLevel().Num() <= 0) { return EBTNodeResult::Failed; }
-	AGuardTower* TowerToEnter = EnemyAIController->GetGuardTowersInLevel()[0];
-	FVector GuardTowerLocation = TowerToEnter->GetActorLocation();
+	//Check if Towers are in level
+	if (EnemyAIController->GetGuardTowersInLevel().Num() <= 0) 
+	{ 
+		UE_LOG(LogTemp, Error, TEXT("There are no towers in level. Add Towers to Level."));
+		return EBTNodeResult::Failed; 
+	}
+
+	//Set closest tower, if not set already
+	if (!bHasClosestTowerSet)
+	{
+		bHasClosestTowerSet = true;
+		GetClosestTower();
+	}
+	
+	if(ClosestTower)
+		UE_LOG(LogTemp, Warning, TEXT("%s closest"), *(ClosestTower->GetName()));
+
+	FVector GuardTowerLocation = ClosestTower->GetActorLocation();
 
 	float Distance = MyMathClass::GetDistance(EnemyAIController->GetPawn()->GetActorLocation(), GuardTowerLocation);
 
@@ -33,7 +46,7 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 	if (bIsUnitNearTower)
 	{
 		//Enter Tower
-		TowerToEnter->UnitEntered(Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn()));
+		ClosestTower->UnitEntered(Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn()));
 		EnemyUnit->SetActorHiddenInGame(true);
 		EnemyUnit->SetActorEnableCollision(false);
 		EnemyUnit->GetMovementComponent()->StopMovementImmediately();
@@ -62,9 +75,26 @@ void UEnterClosestGuardTower::GettingOut()
 		EnemyUnit->InsideTower(nullptr);
 		EnemyUnit->SetNearTower(false);
 
+		//Reset this values
 		bHasTimerStarted = false;
+		bHasClosestTowerSet = false;
+		DistanceMin = 10000.f;
 		BlackboardComponent->ClearValue("Alarm");
 	}
 
 	GetWorld()->GetTimerManager().ClearTimer(ExitingTimer);
+}
+
+void UEnterClosestGuardTower::GetClosestTower()
+{
+	for (auto& GT : EnemyAIController->GetGuardTowersInLevel())
+	{
+		float Distance = MyMathClass::GetDistance(GT->GetActorLocation(), EnemyAIController->GetPawn()->GetActorLocation());
+
+		if (DistanceMin > Distance)
+		{
+			DistanceMin = Distance;
+			ClosestTower = GT;
+		}
+	}
 }
