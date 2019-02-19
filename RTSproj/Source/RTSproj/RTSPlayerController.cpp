@@ -230,15 +230,16 @@ void ARTSPlayerController::LeftMouseButtonActions()
 					if (Hit.GetActor()->GetClass()->IsChildOf<APlayersHideout>())
 					{
 						APlayersHideout* Building = Cast<APlayersHideout>(Hit.GetActor());
-						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Building, HUDPtr, EUnitState::Entering);
+						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Building, EUnitState::Entering);
 					}
 					//If units are under selection
 					//And we point at prison
 					else if (Hit.GetActor()->GetClass()->IsChildOf<APrison>())
 					{
 						APrison* Prison = Cast<APrison>(Hit.GetActor());
-						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Prison, nullptr, EUnitState::Releasing);
+						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Prison, EUnitState::Releasing);
 					}
+					//Else move to pointed location
 					else
 					{
 						FVector MoveTo = Hit.Location;

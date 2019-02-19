@@ -40,7 +40,7 @@ public:
 
 	void Aid(FHitResult Hit, EUnitState UnitState);
 
-	void GetCloserToBuilding(class ABuilding* Building, class ARTSHud* HUDPtr, EUnitState UnitState);
+	void GetCloserToBuilding(class ABuilding* Building, EUnitState UnitState);
 
 private:
 	bool bUnitBusy;
@@ -73,7 +73,7 @@ private:
 		void PerformMove();
 
 	UFUNCTION()
-		void PerformEnterBuilding(class APlayersHideout* TargetBuilding, class ARTSHud* HUDPtr);
+		void PerformEnterBuilding(class APlayersHideout* TargetBuilding);
 
 	UFUNCTION()
 		void PerformReleasePrisoners(class APrison* Prison);

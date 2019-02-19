@@ -31,8 +31,7 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 		GetClosestTower();
 	}
 	
-	if(ClosestTower)
-		UE_LOG(LogTemp, Warning, TEXT("%s closest"), *(ClosestTower->GetName()));
+	if (!ClosestTower) { return EBTNodeResult::Failed; }
 
 	FVector GuardTowerLocation = ClosestTower->GetActorLocation();
 
@@ -49,6 +48,8 @@ EBTNodeResult::Type UEnterClosestGuardTower::ExecuteTask(UBehaviorTreeComponent 
 		ClosestTower->UnitEntered(Cast<ARTSEnemyUnit>(EnemyAIController->GetPawn()));
 		EnemyUnit->SetActorHiddenInGame(true);
 		EnemyUnit->SetActorEnableCollision(false);
+		EnemyUnit->InsideTower(ClosestTower);
+		EnemyUnit->SetNearTower(true);
 		EnemyUnit->GetMovementComponent()->StopMovementImmediately();
 
 		if (!bHasTimerStarted)

@@ -47,7 +47,7 @@ void ARTSAIController::PerformMove()
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 }
 
-void ARTSAIController::GetCloserToBuilding(ABuilding* Building, ARTSHud* HUDPtr, EUnitState UnitState)
+void ARTSAIController::GetCloserToBuilding(ABuilding* Building, EUnitState UnitState)
 {
 	FTimerDelegate PerformDelegate;
 
@@ -69,7 +69,7 @@ void ARTSAIController::GetCloserToBuilding(ABuilding* Building, ARTSHud* HUDPtr,
 
 	if (UnitState == EUnitState::Entering)
 	{
-		PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building, HUDPtr);
+		PerformDelegate.BindUFunction(this, FName("PerformEnterBuilding"), Building);
 	}
 	else if (UnitState == EUnitState::Releasing)
 	{
@@ -79,7 +79,7 @@ void ARTSAIController::GetCloserToBuilding(ABuilding* Building, ARTSHud* HUDPtr,
 	GetWorld()->GetTimerManager().SetTimer(EnterBuildingTimerHandle, PerformDelegate, RequiredTime, false);
 }
 
-void ARTSAIController::PerformEnterBuilding(APlayersHideout* TargetBuilding, ARTSHud* HUDPtr)
+void ARTSAIController::PerformEnterBuilding(APlayersHideout* TargetBuilding)
 {
 	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(this->GetPawn());
 
@@ -98,18 +98,16 @@ void ARTSAIController::PerformEnterBuilding(APlayersHideout* TargetBuilding, ART
 			//Add unit to buildings array
 			TargetBuilding->UnitEntered(PlayerUnit);
 
-			//TODO there's no need to give HUD as parameter
-			//simply just get fpcontroller and get hud from it
 			//Unselect unit that enetered building
-			HUDPtr->RemoveUnitFromSelection();
-
+			Cast<ARTSHud>(GetWorld()->GetFirstPlayerController()->GetHUD())->RemoveUnitFromSelection();
 			bUnitBusy = false;
+
 			GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);			
 		}
 	}
 	else
 	{
-		this->GetCloserToBuilding(TargetBuilding, HUDPtr, EUnitState::Entering);
+		this->GetCloserToBuilding(TargetBuilding, EUnitState::Entering);
 	}
 	
 }
@@ -129,7 +127,7 @@ void ARTSAIController::PerformReleasePrisoners(APrison* Prison)
 	}
 	else
 	{
-		this->GetCloserToBuilding(Prison, nullptr, EUnitState::Releasing);
+		this->GetCloserToBuilding(Prison, EUnitState::Releasing);
 	}
 }
 

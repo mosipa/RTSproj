@@ -18,8 +18,14 @@ class RTSPROJ_API AGuardTowerController : public AAIController
 	AGuardTowerController();
 
 private:
+	class UBlackboardComponent* BlackboardComponent;
+	class UBlackboardData* BlackboardAsset;
+	class UBehaviorTree* BehaviorTree;
+
 	class UAIPerceptionComponent* AIPerceptionComponent;
 	class UAISenseConfig_Sight* Sight;
+
+	virtual void Possess(APawn* Pawn) override;
 
 	UFUNCTION()
 		void OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimulus Stimulus);

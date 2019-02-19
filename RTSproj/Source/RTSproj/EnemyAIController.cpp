@@ -104,24 +104,28 @@ void AEnemyAIController::BeginPlay()
 
 void AEnemyAIController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimulus Stimulus)
 {
-	if (Stimulus.WasSuccessfullySensed())
+	//If EnemyUnit isn't in Tower
+	if (!(Cast<ARTSEnemyUnit>(this->GetPawn())->GetTower()))
 	{
-		//If player unit was spotted
-		//And player unit isn't dead already
-		//And player unit isn't arrested already
-		//And player unit isn't inside a building
-		if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>()
-			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterDead())
-			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterArrested())
-			&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterInBuilding()))
+		if (Stimulus.WasSuccessfullySensed())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Sensed: %s"), *(SensedActor->GetName()));
-			this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
-			this->BlackboardComponent->SetValueAsBool("PlayerInSight", true);
+			//If player unit was spotted
+			//And player unit isn't dead already
+			//And player unit isn't arrested already
+			//And player unit isn't inside a building
+			if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>()
+				&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterDead())
+				&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterArrested())
+				&& !(Cast<ARTSPlayerUnit>(SensedActor)->IsCharacterInBuilding()))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Sensed: %s"), *(SensedActor->GetName()));
+				this->BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
+				this->BlackboardComponent->SetValueAsBool("PlayerInSight", true);
+			}
 		}
-	}
-	else
-	{
-		this->BlackboardComponent->SetValueAsBool("PlayerInSight", false);
+		else
+		{
+			this->BlackboardComponent->SetValueAsBool("PlayerInSight", false);
+		}
 	}
 }

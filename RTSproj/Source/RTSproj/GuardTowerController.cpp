@@ -6,10 +6,31 @@
 #include "AIModule/Classes/Perception/AISenseConfig_Sight.h"
 #include "GuardTower.h"
 #include "RTSPlayerUnit.h"
+#include "AIModule/Classes/BehaviorTree/BlackboardData.h"
+#include "AIModule/Classes/BehaviorTree/BlackboardComponent.h"
+#include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Bool.h"
+#include "AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "AIModule/Classes/BehaviorTree/BehaviorTree.h"
+#include "UObject/ConstructorHelpers.h"
 
 //TODO create BT + tasks for GuardTowerController
 AGuardTowerController::AGuardTowerController()
 {
+	BlackboardAsset = NewObject<UBlackboardData>();
+
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Bool>(FName("Shoot"));
+	BlackboardAsset->UpdatePersistentKey<UBlackboardKeyType_Object>(FName("PlayerUnitKey"));
+
+	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+
+	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTObject(TEXT("/Game/Blueprints/GuardTowerBT"));
+
+	if (BTObject.Succeeded())
+	{
+		BehaviorTree = BTObject.Object;
+		BehaviorTree->BlackboardAsset = BlackboardAsset;
+	}
+
 	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
 	if (AIPerceptionComponent)
 	{
@@ -35,20 +56,37 @@ AGuardTowerController::AGuardTowerController()
 
 }
 
+void AGuardTowerController::Possess(APawn* Pawn)
+{
+	Super::Possess(Pawn);
+
+	AGuardTower* Character = Cast<AGuardTower>(Pawn);
+
+	if (Character)
+	{
+		BlackboardComponent->InitializeBlackboard(*BlackboardAsset);
+	}
+}
+
 void AGuardTowerController::OnTargetPerceptionUpdated(AActor* SensedActor, FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		//If any enemy units are in building
+		//If any enemy units are in tower
 		if (Cast<AGuardTower>(this->GetPawn())->IsAnybodyInside())
 		{
 			//If SensedActor is PlayerUnit's class
 			if (SensedActor->GetClass()->IsChildOf<ARTSPlayerUnit>())
 			{
-				//TODO shooting only once not till unit dies - fix
-				//TODO create BT + tasks for GuardTowerController and in tasks force it to shoot
-				Cast<AGuardTower>(this->GetPawn())->PrepareToFire(Cast<ARTSPlayerUnit>(SensedActor));
+				UE_LOG(LogTemp, Warning, TEXT("%s sensing %s"), *(this->GetPawn()->GetName()), *(SensedActor->GetName()));
+				BlackboardComponent->SetValueAsObject("PlayerUnitKey", SensedActor);
+				BlackboardComponent->SetValueAsBool("Shoot", true);
 			}
 		}
+	}
+	else
+	{
+		BlackboardComponent->ClearValue("PlayerUnitKey");
+		BlackboardComponent->ClearValue("Shoot");
 	}
 }
