@@ -61,6 +61,8 @@ protected:
 
 	void ReleaseUnits();
 
+	void GetBuildingCamera();
+
 private:
 	class ARTSHud* HUDPtr;
 
@@ -76,5 +78,7 @@ private:
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;
 
-	const int32 LEFTMOUSEBUTTONACTION_ID = 9;
+	const int32 LEFTMOUSEBUTTONACTION_ID = 10;// 9;
+
+	int32 CurrentIndex = 0;
 };

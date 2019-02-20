@@ -13,8 +13,12 @@ ARTSPawn::ARTSPawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(FName("CameraComponent"));
 	SetRootComponent(Camera);
-	Camera->SetWorldLocation(FVector(0.f, 0.f, 800.f));
-	Camera->SetWorldRotation(FRotator(-60.f, 0.f, 0.f));
+
+	CameraStartingLocation = FVector(0.f, 0.f, 800.f);
+	CameraStartingRotation = FRotator(-60.f, 0.f, 0.f);
+
+	Camera->SetWorldLocation(CameraStartingLocation);
+	Camera->SetWorldRotation(CameraStartingRotation);
 }
 
 // Called when the game starts or when spawned

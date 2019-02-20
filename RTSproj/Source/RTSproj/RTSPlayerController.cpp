@@ -12,6 +12,7 @@
 #include "Building.h"
 #include "Prison.h"
 #include "PlayersHideout.h"
+#include "RTSPawn.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -115,6 +116,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Aid", IE_Pressed, this, &ARTSPlayerController::Aid);
 	InputComponent->BindAction("Cancel", IE_Pressed, this, &ARTSPlayerController::AddBindingBack);
 	InputComponent->BindAction("ReleaseUnits", IE_Pressed, this, &ARTSPlayerController::ReleaseUnits);
+	InputComponent->BindAction("GetBuildingCamera", IE_Pressed, this, &ARTSPlayerController::GetBuildingCamera);
 	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &ARTSPlayerController::LeftMouseButtonActions);
 }
 
@@ -125,7 +127,7 @@ void ARTSPlayerController::RemoveMoveBinding()
 	//In case it's been already removed - dont do it again
 	if (!bRemovedBinding)
 	{
-		//9 - LeftMouseButtonActions - LEFTMOUSEBUTTONACTION_ID
+		//10 - LeftMouseButtonActions - LEFTMOUSEBUTTONACTION_ID
 		//TODO find a way to get FInputActionBinding with a NAME, not int
 		//use BindingToRemove.GetActionName().ToString() to get name, maybe there's something in it
 		//compare to all bindings and find the one (MOVE) to remove
@@ -264,6 +266,31 @@ void ARTSPlayerController::ReleaseUnits()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("RELEASING"));
 		HideoutPtr->ReleaseUnits();
+	}
+}
+
+//TESTING
+void ARTSPlayerController::GetBuildingCamera()
+{
+	//If building is selected get view
+	if (HideoutPtr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Getting view of building"));
+		FVector CamLoc = HideoutPtr->GetPossibleCamLocations()[CurrentIndex] + HideoutPtr->GetRootComponent()->GetComponentLocation();
+		FRotator CamRot = HideoutPtr->GetPossibleCamRotations()[CurrentIndex];
+
+		this->GetPawn()->GetRootComponent()->SetWorldLocationAndRotation(CamLoc, CamRot);
+
+		CurrentIndex = (CurrentIndex + 1) % HideoutPtr->GetPossibleCamLocations().Num();
+	}
+	//Get back to camera starting position
+	else
+	{
+		FVector CamLoc = Cast<ARTSPawn>(this->GetPawn())->GetCameraStartingLocation();
+		FRotator CamRot = Cast<ARTSPawn>(this->GetPawn())->GetCameraStartingRotation();
+
+		this->GetPawn()->GetRootComponent()->SetWorldLocationAndRotation(CamLoc, CamRot);
+		CurrentIndex = 0;
 	}
 }
 
