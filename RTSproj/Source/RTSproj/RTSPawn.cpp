@@ -14,6 +14,7 @@ ARTSPawn::ARTSPawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(FName("CameraComponent"));
 	SetRootComponent(Camera);
 
+	//TODO should be depended on loaded level
 	CameraStartingLocation = FVector(0.f, 0.f, 800.f);
 	CameraStartingRotation = FRotator(-60.f, 0.f, 0.f);
 

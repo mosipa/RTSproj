@@ -12,7 +12,7 @@
 #include "Building.h"
 #include "Prison.h"
 #include "PlayersHideout.h"
-#include "RTSPawn.h"
+#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -21,6 +21,7 @@ ARTSPlayerController::ARTSPlayerController()
 
 	bRemovedBinding = false;
 	bAidValue = false;
+	bDisableInputs = false;
 
 	HideoutPtr = nullptr;
 
@@ -60,7 +61,7 @@ void ARTSPlayerController::Tick(float DeltaTime)
 
 void ARTSPlayerController::MoveCamera()
 {
-	if (!HUDPtr) { return; }
+	if (!HUDPtr || bDisableInputs) { return; }
 
 	//Current position of cursor
 	FVector2D MousePosition = HUDPtr->GetMousePosition2D();
@@ -179,6 +180,8 @@ APlayersHideout* ARTSPlayerController::GetSelectedBuilding()
 
 void ARTSPlayerController::ZoomIn()
 {
+	if (bDisableInputs) { return; }
+
 	FVector CameraLocation = this->GetPawn()->GetActorLocation();
 	CameraLocation.Z -= 20.f;
 	this->GetPawn()->SetActorLocation(CameraLocation);
@@ -186,6 +189,8 @@ void ARTSPlayerController::ZoomIn()
 
 void ARTSPlayerController::ZoomOut()
 {
+	if (bDisableInputs) { return; }
+
 	FVector CameraLocation = this->GetPawn()->GetActorLocation();
 	CameraLocation.Z += 20.f;
 	this->GetPawn()->SetActorLocation(CameraLocation);
@@ -208,7 +213,7 @@ void ARTSPlayerController::FinishSelecting()
 
 void ARTSPlayerController::LeftMouseButtonActions()
 {
-	if (!HUDPtr) { return; }
+	if (!HUDPtr || bDisableInputs) { return; }
 	
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit))
@@ -262,7 +267,7 @@ void ARTSPlayerController::LeftMouseButtonActions()
 
 void ARTSPlayerController::ReleaseUnits()
 {
-	if (HideoutPtr)
+	if (HideoutPtr && !bDisableInputs)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("RELEASING"));
 		HideoutPtr->ReleaseUnits();
@@ -270,33 +275,47 @@ void ARTSPlayerController::ReleaseUnits()
 }
 
 //TESTING
+//Want to add input action - seeing through units eyes (scouts)
+//Testing it on buildings
 void ARTSPlayerController::GetBuildingCamera()
-{
+{	
 	//If building is selected get view
 	if (HideoutPtr)
 	{
+		if (!bDisableInputs)
+		{
+			bDisableInputs = true;
+			PrevCamLocation = this->GetPawn()->GetRootComponent()->GetComponentLocation();
+			PrevCamRotation = this->GetPawn()->GetRootComponent()->GetComponentRotation();
+		}
+
 		UE_LOG(LogTemp, Warning, TEXT("Getting view of building"));
 		FVector CamLoc = HideoutPtr->GetPossibleCamLocations()[CurrentIndex] + HideoutPtr->GetRootComponent()->GetComponentLocation();
 		FRotator CamRot = HideoutPtr->GetPossibleCamRotations()[CurrentIndex];
 
-		this->GetPawn()->GetRootComponent()->SetWorldLocationAndRotation(CamLoc, CamRot);
+		//This needs to be set in order to MoveComponentTo to work
+		//At least CallbackTarget has to be set
+		FLatentActionInfo info = FLatentActionInfo();
+		info.CallbackTarget = this->GetPawn();
+
+		//Moving camera
+		UKismetSystemLibrary::MoveComponentTo(this->GetPawn()->GetRootComponent(), CamLoc, CamRot, true, false, 0.2f, true, EMoveComponentAction::Move, info);
 
 		CurrentIndex = (CurrentIndex + 1) % HideoutPtr->GetPossibleCamLocations().Num();
 	}
 	//Get back to camera starting position
 	else
 	{
-		FVector CamLoc = Cast<ARTSPawn>(this->GetPawn())->GetCameraStartingLocation();
-		FRotator CamRot = Cast<ARTSPawn>(this->GetPawn())->GetCameraStartingRotation();
+		bDisableInputs = false;
 
-		this->GetPawn()->GetRootComponent()->SetWorldLocationAndRotation(CamLoc, CamRot);
+		this->GetPawn()->GetRootComponent()->SetWorldLocationAndRotation(PrevCamLocation, PrevCamRotation);
 		CurrentIndex = 0;
 	}
 }
 
 void ARTSPlayerController::Knife()
 {
-	if (!HUDPtr) { return; }
+	if (!HUDPtr || bDisableInputs) { return; }
 	
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
@@ -322,7 +341,7 @@ void ARTSPlayerController::Knife()
 
 void ARTSPlayerController::Pistol()
 {
-	if (!HUDPtr) { return; }
+	if (!HUDPtr || bDisableInputs) { return; }
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{
@@ -348,7 +367,7 @@ void ARTSPlayerController::Pistol()
 
 void ARTSPlayerController::Aid()
 {
-	if (!HUDPtr) { return; }
+	if (!HUDPtr || bDisableInputs) { return; }
 
 	if (HUDPtr->GetSelectedActors().Num() > 0)
 	{

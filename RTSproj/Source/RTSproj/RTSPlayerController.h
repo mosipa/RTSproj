@@ -78,7 +78,11 @@ private:
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;
 
-	const int32 LEFTMOUSEBUTTONACTION_ID = 10;// 9;
+	const int32 LEFTMOUSEBUTTONACTION_ID = 10;
 
 	int32 CurrentIndex = 0;
+	bool bDisableInputs;
+
+	FVector PrevCamLocation;
+	FRotator PrevCamRotation;
 };
