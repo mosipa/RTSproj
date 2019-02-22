@@ -23,11 +23,6 @@ public:
 	FORCEINLINE TArray<FVector> GetPossibleCamLocations() { return PossibleCamLocations; }
 	FORCEINLINE TArray<FRotator> GetPossibleCamRotations() { return PossibleCamRotations; }
 
-	//For reapplying materials to mesh
-	FORCEINLINE UStaticMeshComponent* GetBaseMesh() const { return BaseMesh; }
-
-	class UMaterial* GetStoredMaterial() const;
-
 	void ToggleTransparency(float OpacityValue);
 //TESTING
 private:

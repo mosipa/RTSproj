@@ -9,7 +9,7 @@
 
 APlayersHideout::APlayersHideout()
 {
-	//Find material
+	//Find material base mesh is made of
 	ConstructorHelpers::FObjectFinder<UMaterial> FoundMaterial(TEXT("/Game/Materials/M_Building"));
 	if (FoundMaterial.Succeeded())
 	{
@@ -23,11 +23,6 @@ APlayersHideout::APlayersHideout()
 	PossibleCamRotations.Add(FRotator(-20.f, 0.f, 0.f));
 	PossibleCamRotations.Add(FRotator(-20.f, 60.f, 0.f));
 	PossibleCamRotations.Add(FRotator(-20.f, 240.f, 0.f));
-}
-
-UMaterial* APlayersHideout::GetStoredMaterial() const
-{
-	return StoredMaterial;
 }
 
 void APlayersHideout::ToggleTransparency(float OpacityValue)
