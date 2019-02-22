@@ -14,9 +14,6 @@
 #include "PlayersHideout.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "MyMathClass.h"
-#include "Runtime/Engine/Classes/Materials/Material.h"
-#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
-#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -29,9 +26,6 @@ ARTSPlayerController::ARTSPlayerController()
 	bChangedMaterial = false;
 
 	HideoutPtr = nullptr;
-
-	StoredMaterial = nullptr;
-	DynamicMaterialInst = nullptr;
 
 	ConstructorHelpers::FClassFinder<UUserWidget> CHUserHUD_BP(TEXT("/Game/Blueprints/UserHUD_BP"));
 	if (CHUserHUD_BP.Succeeded())
@@ -126,7 +120,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Cancel", IE_Pressed, this, &ARTSPlayerController::AddBindingBack);
 	InputComponent->BindAction("ReleaseUnits", IE_Pressed, this, &ARTSPlayerController::ReleaseUnits);
 	InputComponent->BindAction("GetBuildingCamera", IE_Pressed, this, &ARTSPlayerController::GetBuildingCamera);
-	InputComponent->BindAction("MakeTransparent", IE_Pressed, this, &ARTSPlayerController::MakeTransparent);
+	InputComponent->BindAction("ToggleTransparency", IE_Pressed, this, &ARTSPlayerController::ToggleTransparency);
 	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &ARTSPlayerController::LeftMouseButtonActions);
 }
 
@@ -322,7 +316,7 @@ void ARTSPlayerController::GetBuildingCamera()
 	}
 }
 
-void ARTSPlayerController::MakeTransparent()
+void ARTSPlayerController::ToggleTransparency()
 {
 	if (!HUDPtr || HUDPtr->GetSelectedActors().Num() < 1 || bDisableInputs) { return; }
 
@@ -345,41 +339,19 @@ void ARTSPlayerController::MakeTransparent()
 		//TODO Figure out the best distance to activate it
 		if (Distance <= 400.f)
 		{
-			//If material was changed to transparent - apply original
+			//If material is transparent - increase opacity to make material solid
 			if (bChangedMaterial)
 			{
-				//TODO make method to change to either get material from building class (make variable of that material) 
-				//or make method that changes it there and invoke method here
-				UStaticMeshComponent* HideoutMesh = PlayersHideout->GetBaseMesh();
-				StoredMaterial = PlayersHideout->GetStoredMaterial();
-
-				if (!HideoutMesh || !StoredMaterial) { return; }
-
-				DynamicMaterialInst = UMaterialInstanceDynamic::Create(StoredMaterial, HideoutMesh);
-
-				if (!DynamicMaterialInst) { return; }
-
-				DynamicMaterialInst->SetScalarParameterValue("Opacity", 1.f);
-				HideoutMesh->SetMaterial(0, DynamicMaterialInst);
+				float OpacityVal = 1.f;
+				PlayersHideout->ToggleTransparency(OpacityVal);
 
 				bChangedMaterial = false;
 			}
-			//If material hasn't been changed - apply transparent material
+			//If material is solid - decrease opacity to make material transparent
 			else
 			{
-				//TODO make method to change to either get material from building class (make variable of that material)
-				//or make method that changes it there and invoke method here
-				UStaticMeshComponent* HideoutMesh = PlayersHideout->GetBaseMesh();
-				StoredMaterial = PlayersHideout->GetStoredMaterial();
-
-				if (!HideoutMesh || !StoredMaterial) { return; }
-
-				DynamicMaterialInst = UMaterialInstanceDynamic::Create(StoredMaterial, HideoutMesh);
-				
-				if (!DynamicMaterialInst) { return; }
-
-				DynamicMaterialInst->SetScalarParameterValue("Opacity", 0.2f);
-				HideoutMesh->SetMaterial(0, DynamicMaterialInst);
+				float OpacityVal = 0.2f;
+				PlayersHideout->ToggleTransparency(OpacityVal);
 
 				bChangedMaterial = true;
 			}

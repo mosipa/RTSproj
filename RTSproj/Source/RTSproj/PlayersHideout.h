@@ -27,10 +27,13 @@ public:
 	FORCEINLINE UStaticMeshComponent* GetBaseMesh() const { return BaseMesh; }
 
 	class UMaterial* GetStoredMaterial() const;
+
+	void ToggleTransparency(float OpacityValue);
 //TESTING
 private:
 	TArray<FVector> PossibleCamLocations;
 	TArray<FRotator> PossibleCamRotations;
 
 	class UMaterial* StoredMaterial;
+	class UMaterialInstanceDynamic* DynamicMaterialInst;
 };

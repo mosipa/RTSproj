@@ -4,9 +4,12 @@
 #include "RTSPlayerUnit.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Materials/Material.h"
+#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 
 APlayersHideout::APlayersHideout()
 {
+	//Find material
 	ConstructorHelpers::FObjectFinder<UMaterial> FoundMaterial(TEXT("/Game/Materials/M_Building"));
 	if (FoundMaterial.Succeeded())
 	{
@@ -25,6 +28,20 @@ APlayersHideout::APlayersHideout()
 UMaterial* APlayersHideout::GetStoredMaterial() const
 {
 	return StoredMaterial;
+}
+
+void APlayersHideout::ToggleTransparency(float OpacityValue)
+{
+	if (!StoredMaterial || !BaseMesh) { return; }
+
+	//Create dynamic material
+	DynamicMaterialInst = UMaterialInstanceDynamic::Create(StoredMaterial, BaseMesh);
+
+	if (!DynamicMaterialInst) { return; }
+
+	//Change value of opacity parameter of material
+	DynamicMaterialInst->SetScalarParameterValue("Opacity", OpacityValue);
+	this->BaseMesh->SetMaterial(0, DynamicMaterialInst);
 }
 
 void APlayersHideout::ReleaseUnits()

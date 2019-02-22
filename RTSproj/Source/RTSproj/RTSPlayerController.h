@@ -63,7 +63,7 @@ protected:
 
 	void GetBuildingCamera();
 
-	void MakeTransparent();
+	void ToggleTransparency();
 
 private:
 	class ARTSHud* HUDPtr;
@@ -89,7 +89,4 @@ private:
 	FRotator PrevCamRotation;
 
 	bool bChangedMaterial;
-
-	class UMaterial* StoredMaterial;
-	class UMaterialInstanceDynamic* DynamicMaterialInst;
 };
