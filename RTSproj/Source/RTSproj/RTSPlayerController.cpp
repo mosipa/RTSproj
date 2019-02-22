@@ -13,6 +13,10 @@
 #include "Prison.h"
 #include "PlayersHideout.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "MyMathClass.h"
+#include "Runtime/Engine/Classes/Materials/Material.h"
+#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -22,8 +26,12 @@ ARTSPlayerController::ARTSPlayerController()
 	bRemovedBinding = false;
 	bAidValue = false;
 	bDisableInputs = false;
+	bChangedMaterial = false;
 
 	HideoutPtr = nullptr;
+
+	StoredMaterial = nullptr;
+	DynamicMaterialInst = nullptr;
 
 	ConstructorHelpers::FClassFinder<UUserWidget> CHUserHUD_BP(TEXT("/Game/Blueprints/UserHUD_BP"));
 	if (CHUserHUD_BP.Succeeded())
@@ -118,6 +126,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Cancel", IE_Pressed, this, &ARTSPlayerController::AddBindingBack);
 	InputComponent->BindAction("ReleaseUnits", IE_Pressed, this, &ARTSPlayerController::ReleaseUnits);
 	InputComponent->BindAction("GetBuildingCamera", IE_Pressed, this, &ARTSPlayerController::GetBuildingCamera);
+	InputComponent->BindAction("MakeTransparent", IE_Pressed, this, &ARTSPlayerController::MakeTransparent);
 	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &ARTSPlayerController::LeftMouseButtonActions);
 }
 
@@ -128,7 +137,7 @@ void ARTSPlayerController::RemoveMoveBinding()
 	//In case it's been already removed - dont do it again
 	if (!bRemovedBinding)
 	{
-		//10 - LeftMouseButtonActions - LEFTMOUSEBUTTONACTION_ID
+		//11 - LeftMouseButtonActions - LEFTMOUSEBUTTONACTION_ID
 		//TODO find a way to get FInputActionBinding with a NAME, not int
 		//use BindingToRemove.GetActionName().ToString() to get name, maybe there's something in it
 		//compare to all bindings and find the one (MOVE) to remove
@@ -310,6 +319,71 @@ void ARTSPlayerController::GetBuildingCamera()
 
 		this->GetPawn()->GetRootComponent()->SetWorldLocationAndRotation(PrevCamLocation, PrevCamRotation);
 		CurrentIndex = 0;
+	}
+}
+
+void ARTSPlayerController::MakeTransparent()
+{
+	if (!HUDPtr || HUDPtr->GetSelectedActors().Num() < 1 || bDisableInputs) { return; }
+
+	//Only one unit to tell the distance
+	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(HUDPtr->GetSelectedActors()[0]);
+
+	if (!PlayerUnit) { return; }
+
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECollisionChannel::ECC_WorldDynamic, false, Hit);
+
+	APlayersHideout* PlayersHideout = Cast<APlayersHideout>(Hit.GetActor());
+
+	//Check if player's pointing at APlayerHideout 
+	//IMPORTANT TODO for starter we're going to try do it with this type of buildings - change to work for all needed object
+	if (PlayersHideout)
+	{
+		float Distance = MyMathClass::GetDistance(PlayerUnit->GetActorLocation(), PlayersHideout->GetActorLocation());
+
+		//TODO Figure out the best distance to activate it
+		if (Distance <= 400.f)
+		{
+			//If material was changed to transparent - apply original
+			if (bChangedMaterial)
+			{
+				//TODO make method to change to either get material from building class (make variable of that material) 
+				//or make method that changes it there and invoke method here
+				UStaticMeshComponent* HideoutMesh = PlayersHideout->GetBaseMesh();
+				StoredMaterial = PlayersHideout->GetStoredMaterial();
+
+				if (!HideoutMesh || !StoredMaterial) { return; }
+
+				DynamicMaterialInst = UMaterialInstanceDynamic::Create(StoredMaterial, HideoutMesh);
+
+				if (!DynamicMaterialInst) { return; }
+
+				DynamicMaterialInst->SetScalarParameterValue("Opacity", 1.f);
+				HideoutMesh->SetMaterial(0, DynamicMaterialInst);
+
+				bChangedMaterial = false;
+			}
+			//If material hasn't been changed - apply transparent material
+			else
+			{
+				//TODO make method to change to either get material from building class (make variable of that material)
+				//or make method that changes it there and invoke method here
+				UStaticMeshComponent* HideoutMesh = PlayersHideout->GetBaseMesh();
+				StoredMaterial = PlayersHideout->GetStoredMaterial();
+
+				if (!HideoutMesh || !StoredMaterial) { return; }
+
+				DynamicMaterialInst = UMaterialInstanceDynamic::Create(StoredMaterial, HideoutMesh);
+				
+				if (!DynamicMaterialInst) { return; }
+
+				DynamicMaterialInst->SetScalarParameterValue("Opacity", 0.2f);
+				HideoutMesh->SetMaterial(0, DynamicMaterialInst);
+
+				bChangedMaterial = true;
+			}
+		}
 	}
 }
 

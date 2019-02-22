@@ -63,6 +63,8 @@ protected:
 
 	void GetBuildingCamera();
 
+	void MakeTransparent();
+
 private:
 	class ARTSHud* HUDPtr;
 
@@ -78,11 +80,16 @@ private:
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;
 
-	const int32 LEFTMOUSEBUTTONACTION_ID = 10;
+	const int32 LEFTMOUSEBUTTONACTION_ID = 11;
 
 	int32 CurrentIndex = 0;
 	bool bDisableInputs;
 
 	FVector PrevCamLocation;
 	FRotator PrevCamRotation;
+
+	bool bChangedMaterial;
+
+	class UMaterial* StoredMaterial;
+	class UMaterialInstanceDynamic* DynamicMaterialInst;
 };
