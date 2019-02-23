@@ -74,8 +74,10 @@ private:
 
 	bool bRemovedBinding;
 	bool bAidValue;
-
+	
+	//TODO maybe there's a way to combine it into one?
 	class APlayersHideout* HideoutPtr;
+	class ASewerEntrance* SewerPtr;
 
 	TSubclassOf <class UUserWidget > UWClass;
 	class UUserWidget* UserWidget;

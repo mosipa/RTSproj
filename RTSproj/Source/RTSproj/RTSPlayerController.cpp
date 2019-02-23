@@ -14,6 +14,7 @@
 #include "PlayersHideout.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "MyMathClass.h"
+#include "SewerEntrance.h"
 
 ARTSPlayerController::ARTSPlayerController()
 {
@@ -25,6 +26,7 @@ ARTSPlayerController::ARTSPlayerController()
 	bDisableInputs = false;
 
 	HideoutPtr = nullptr;
+	SewerPtr = nullptr;
 
 	ConstructorHelpers::FClassFinder<UUserWidget> CHUserHUD_BP(TEXT("/Game/Blueprints/UserHUD_BP"));
 	if (CHUserHUD_BP.Succeeded())
@@ -248,6 +250,13 @@ void ARTSPlayerController::LeftMouseButtonActions()
 						APrison* Prison = Cast<APrison>(Hit.GetActor());
 						Cast<ARTSAIController>(Actor->GetController())->GetCloserToBuilding(Prison, EUnitState::Releasing);
 					}
+					//If units are under selection
+					//And we point at sewer entrance
+					else if (Hit.GetActor()->GetClass()->IsChildOf<ASewerEntrance>())
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Ordering units to move towards sewer's entrance"));
+						//TODO add logic + decide if entering sewer by unit should change level
+					}
 					//Else move to pointed location
 					else
 					{
@@ -263,6 +272,13 @@ void ARTSPlayerController::LeftMouseButtonActions()
 		{
 			HideoutPtr = Cast<APlayersHideout>(Hit.GetActor());
 			UE_LOG(LogTemp, Warning, TEXT("Building %s seleceted"), *(HideoutPtr->GetName()));
+		}
+		//If there aren't any units under selection
+		//And we point at sewer entrance
+		else if (Hit.GetActor()->GetClass()->IsChildOf<ASewerEntrance>())
+		{
+			SewerPtr = Cast<ASewerEntrance>(Hit.GetActor());
+			UE_LOG(LogTemp, Warning, TEXT("Opening sewer level"));
 		}
 	}
 }
@@ -284,6 +300,7 @@ void ARTSPlayerController::GetBuildingCamera()
 	//If building is selected get view
 	if (HideoutPtr)
 	{
+		//Block all inputs that needed to be blocked and save player's camera location and rotation
 		if (!bDisableInputs)
 		{
 			bDisableInputs = true;
