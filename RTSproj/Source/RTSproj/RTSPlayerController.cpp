@@ -23,7 +23,6 @@ ARTSPlayerController::ARTSPlayerController()
 	bRemovedBinding = false;
 	bAidValue = false;
 	bDisableInputs = false;
-	bChangedMaterial = false;
 
 	HideoutPtr = nullptr;
 
@@ -339,22 +338,8 @@ void ARTSPlayerController::ToggleTransparency()
 		//TODO Figure out the best distance to activate it
 		if (Distance <= 400.f)
 		{
-			//If material is transparent - increase opacity to make material solid
-			if (bChangedMaterial)
-			{
-				float OpacityVal = 1.f;
-				PlayersHideout->ToggleTransparency(OpacityVal);
-
-				bChangedMaterial = false;
-			}
-			//If material is solid - decrease opacity to make material transparent
-			else
-			{
-				float OpacityVal = 0.2f;
-				PlayersHideout->ToggleTransparency(OpacityVal);
-
-				bChangedMaterial = true;
-			}
+			//Change material - it's going to be decide inside building class if object is going to be transparent or not (depend on previous state of building's material)
+			PlayersHideout->ToggleTransparency();
 		}
 	}
 }

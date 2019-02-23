@@ -87,6 +87,4 @@ private:
 
 	FVector PrevCamLocation;
 	FRotator PrevCamRotation;
-
-	bool bChangedMaterial;
 };

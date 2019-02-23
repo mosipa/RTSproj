@@ -23,7 +23,7 @@ public:
 	FORCEINLINE TArray<FVector> GetPossibleCamLocations() { return PossibleCamLocations; }
 	FORCEINLINE TArray<FRotator> GetPossibleCamRotations() { return PossibleCamRotations; }
 
-	void ToggleTransparency(float OpacityValue);
+	void ToggleTransparency();
 //TESTING
 private:
 	TArray<FVector> PossibleCamLocations;
@@ -31,4 +31,6 @@ private:
 
 	class UMaterial* StoredMaterial;
 	class UMaterialInstanceDynamic* DynamicMaterialInst;
+
+	bool bChangedMaterial;
 };

@@ -23,9 +23,11 @@ APlayersHideout::APlayersHideout()
 	PossibleCamRotations.Add(FRotator(-20.f, 0.f, 0.f));
 	PossibleCamRotations.Add(FRotator(-20.f, 60.f, 0.f));
 	PossibleCamRotations.Add(FRotator(-20.f, 240.f, 0.f));
+
+	bChangedMaterial = false;
 }
 
-void APlayersHideout::ToggleTransparency(float OpacityValue)
+void APlayersHideout::ToggleTransparency()
 {
 	if (!StoredMaterial || !BaseMesh) { return; }
 
@@ -33,6 +35,20 @@ void APlayersHideout::ToggleTransparency(float OpacityValue)
 	DynamicMaterialInst = UMaterialInstanceDynamic::Create(StoredMaterial, BaseMesh);
 
 	if (!DynamicMaterialInst) { return; }
+	float OpacityValue;
+
+	//If building' material is transparent
+	if (bChangedMaterial)
+	{
+		OpacityValue = 1.f;
+		bChangedMaterial = false;
+	}
+	//If building's material is solid
+	else
+	{
+		OpacityValue = 0.2f;
+		bChangedMaterial = true;
+	}
 
 	//Change value of opacity parameter of material
 	DynamicMaterialInst->SetScalarParameterValue("Opacity", OpacityValue);
