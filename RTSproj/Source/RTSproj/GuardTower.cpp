@@ -31,9 +31,6 @@ AGuardTower::AGuardTower()
 	Peek->SetRelativeLocation(FVector(0.f, 0.f, 65.f));
 
 	UnitsInside.Empty();
-
-	//Time required to lock target before shooting
-	PrepareTime = .5f;
 }
 
 void AGuardTower::UnitEntered(ARTSEnemyUnit* EnemyUnit)
@@ -67,41 +64,27 @@ void AGuardTower::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, clas
 	}
 }
 
-void AGuardTower::PrepareToFire(ARTSPlayerUnit* PlayerUnit)
-{
-	//Clear Timer of last spotted PlayerUnit
-	GetWorld()->GetTimerManager().ClearTimer(ShootTimerHandle);
-
-	FTimerDelegate PerformDelegate;
-	//TO_REMOVE
-	UE_LOG(LogTemp, Warning, TEXT("PrepToFire"));
-	PerformDelegate.BindUFunction(this, FName("OpenFire"), PlayerUnit);
-
-	GetWorld()->GetTimerManager().SetTimer(ShootTimerHandle, PerformDelegate, PrepareTime, false);
-}
-
 void AGuardTower::OpenFire(ARTSPlayerUnit* PlayerUnit)
 {
-	//Set rotation of guard at peek to face PlayerUnit
+	//Rotates guard located at peek
 	FRotator PeekRotation = UKismetMathLibrary::FindLookAtRotation(this->Peek->GetComponentLocation(), PlayerUnit->GetActorLocation());
-	this->Peek->SetRelativeRotation(PeekRotation);
-	/*auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-		this->GetActorLocation() + this->GetActorForwardVector() * 100.f,
-		this->GetActorRotation()
-		);*/
+	this->Peek->SetWorldRotation(PeekRotation);
 
-	//TO_REMOVE - debugging purpose
-	UE_LOG(LogTemp, Warning, TEXT("OpenFire"));
-	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
-		Projectile_BP,
-		this->Peek->GetComponentLocation() + this->Peek->GetForwardVector() * 100.f,
-		this->Peek->GetComponentRotation()
-		);
+	//Count cooldown
+	float CooldownLeft = GetWorld()->GetTimeSeconds() - LastTimeFired;
 
-	if (Projectile)
+	if (CooldownLeft > Cooldown)
 	{
-		Projectile->LaunchProjectile();
-	}
+		auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+			Projectile_BP,
+			this->Peek->GetComponentLocation() + this->Peek->GetForwardVector() * 100.f,
+			this->Peek->GetComponentRotation()
+			);
 
-	GetWorld()->GetTimerManager().ClearTimer(ShootTimerHandle);
+		if (Projectile)
+		{
+			LastTimeFired = GetWorld()->GetTimeSeconds();
+			Projectile->LaunchProjectile();
+		}
+	}
 }

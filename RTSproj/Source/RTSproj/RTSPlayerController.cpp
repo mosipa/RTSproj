@@ -121,7 +121,7 @@ void ARTSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Cancel", IE_Pressed, this, &ARTSPlayerController::AddBindingBack);
 	InputComponent->BindAction("ReleaseUnits", IE_Pressed, this, &ARTSPlayerController::ReleaseUnits);
 	InputComponent->BindAction("GetBuildingCamera", IE_Pressed, this, &ARTSPlayerController::GetBuildingCamera);
-	InputComponent->BindAction("ToggleTransparency", IE_Pressed, this, &ARTSPlayerController::ToggleTransparency);
+	InputComponent->BindAction("ToggleTransparency", IE_Pressed, this, &ARTSPlayerController::ToggleTransparency); 
 	InputComponent->BindAction("LeftMouseButton", IE_Pressed, this, &ARTSPlayerController::LeftMouseButtonActions);
 }
 

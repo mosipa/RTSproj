@@ -18,7 +18,7 @@ public:
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	void PrepareToFire(class ARTSPlayerUnit* PlayerUnit);
+	void OpenFire(class ARTSPlayerUnit* PlayerUnit);
 
 	void UnitEntered(class ARTSEnemyUnit* EnemyUnit);
 	void UnitLeft(class ARTSEnemyUnit* EnemyUnit);
@@ -41,10 +41,8 @@ protected:
 		TSubclassOf<class AProjectile> Projectile_BP;
 
 private:
-	UFUNCTION()
-		void OpenFire(class ARTSPlayerUnit* PlayerUnit);
+	UPROPERTY(EditAnywhere, Category = "Firing")
+		float Cooldown = 2.f;
 
-	float PrepareTime;
-
-	FTimerHandle ShootTimerHandle;
+	float LastTimeFired = 0.f;;
 };

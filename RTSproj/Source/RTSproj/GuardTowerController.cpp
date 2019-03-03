@@ -42,7 +42,7 @@ AGuardTowerController::AGuardTowerController()
 	{
 		Sight->SightRadius = 1000;
 		Sight->LoseSightRadius = 1100;
-		Sight->PeripheralVisionAngleDegrees = 45.f;
+		Sight->PeripheralVisionAngleDegrees = 360.f;
 		Sight->DetectionByAffiliation.bDetectEnemies = true;
 		Sight->DetectionByAffiliation.bDetectNeutrals = true;
 		Sight->DetectionByAffiliation.bDetectFriendlies = true;
@@ -60,11 +60,12 @@ void AGuardTowerController::Possess(APawn* Pawn)
 {
 	Super::Possess(Pawn);
 
-	AGuardTower* Character = Cast<AGuardTower>(Pawn);
+	AGuardTower* Tower = Cast<AGuardTower>(Pawn);
 
-	if (Character)
+	if (Tower)
 	{
 		BlackboardComponent->InitializeBlackboard(*BlackboardAsset);
+		this->RunBehaviorTree(BehaviorTree);
 	}
 }
 

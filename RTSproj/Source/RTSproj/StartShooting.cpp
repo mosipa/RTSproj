@@ -10,12 +10,25 @@ EBTNodeResult::Type UStartShooting::ExecuteTask(UBehaviorTreeComponent & OwnerCo
 {
 	Blackboard = OwnerComp.GetBlackboardComponent();
 
-	UE_LOG(LogTemp, Warning, TEXT("%s in StartShooting"), *(Pawn->GetName()));
 	Pawn = Cast<AGuardTower>(Cast<AGuardTowerController>(OwnerComp.GetOwner())->GetPawn());
 	if (!Pawn) { return EBTNodeResult::Failed; }
 
+	//If target exists
 	ARTSPlayerUnit* PlayerToShootAt = Cast<ARTSPlayerUnit>(Blackboard->GetValueAsObject("PlayerUnitKey"));
-	if(PlayerToShootAt) { return EBTNodeResult::Failed; }
-	Pawn->PrepareToFire(PlayerToShootAt);
+	if(!PlayerToShootAt) { return EBTNodeResult::Failed; }
+
+	//If there's noone inside tower
+	if (!Pawn->IsAnybodyInside())
+	{
+		//Clear blackboard values
+		Blackboard->ClearValue("Shoot");
+		Blackboard->ClearValue("PlayerUnitKey");
+
+		return EBTNodeResult::Aborted;
+	}
+
+	//Fire from peek
+	Pawn->OpenFire(PlayerToShootAt);
+
 	return EBTNodeResult::Succeeded;
 }

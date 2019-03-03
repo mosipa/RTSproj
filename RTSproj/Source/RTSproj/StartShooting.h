@@ -18,6 +18,6 @@ public:
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory) override;
 
 private:
-	UBlackboardComponent* Blackboard = nullptr;
-	class AGuardTower* Pawn = nullptr;
+	UBlackboardComponent* Blackboard;
+	class AGuardTower* Pawn;
 };

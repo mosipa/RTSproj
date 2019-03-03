@@ -31,7 +31,9 @@ private:
 	class UProjectileMovementComponent* ProjectileMovementComponent = nullptr;
 
 	float ProjectileSpeed = 5000.f;
-	float ProjectileDamage = 80.f;
+
+	UPROPERTY(EditAnywhere)
+		float ProjectileDamage = 80.f;
 
 	UPROPERTY(VisibleAnywhere, Category = Component)
 		class URadialForceComponent* ExplosionForce = nullptr;
