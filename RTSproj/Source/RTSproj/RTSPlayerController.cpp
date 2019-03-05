@@ -76,27 +76,34 @@ void ARTSPlayerController::MoveCamera()
 	//Get our pawn (camera) current location
 	FVector ActorLocation = this->GetPawn()->GetActorLocation();
 	
+	//TODO Find a way to get map size and get those values from there
+	float MapMaxXCord = 1020.f;
+	float MapMaxYCord = 1700.f;
+	float MapMinXCord = -1700.f;
+	float MapMinYCord = -1690.f;
+
 	//If cursor is on the edge, slowly move camera in that direction
 	if (MousePosition.X < (float)OutViewportSizeX * 0.05)
 	{
 		ActorLocation.Y -= 18.f;
-		this->GetPawn()->SetActorLocation(ActorLocation);
+		if (ActorLocation.Y < MapMinYCord) { return; }
 	}
 	if (MousePosition.X > (float)OutViewportSizeX * 0.95)
 	{
 		ActorLocation.Y += 18.f;
-		this->GetPawn()->SetActorLocation(ActorLocation);
+		if (ActorLocation.Y > MapMaxYCord) { return; }
 	}
 	if (MousePosition.Y < (float)OutViewportSizeY * 0.05)
 	{
 		ActorLocation.X += 18.f;
-		this->GetPawn()->SetActorLocation(ActorLocation);
+		if (ActorLocation.X > MapMaxXCord) { return; }
 	}
 	if (MousePosition.Y > (float)OutViewportSizeY * 0.95)
 	{
 		ActorLocation.X -= 18.f;
-		this->GetPawn()->SetActorLocation(ActorLocation);
+		if (ActorLocation.X < MapMinXCord) { return; }
 	}
+	this->GetPawn()->SetActorLocation(ActorLocation);
 }
 
 TArray<class ARTSPlayerUnit*> ARTSPlayerController::GetAllSelectedUnits()
@@ -182,12 +189,20 @@ APlayersHideout* ARTSPlayerController::GetSelectedBuilding()
 	return HideoutPtr;
 }
 
+//TODO decide if we want to allow player to use ZoomIn/ZoomOut
+//Maybe just add it in options in future, so player can do it once how zoomed game he wants
 void ARTSPlayerController::ZoomIn()
 {
 	if (bDisableInputs) { return; }
 
 	FVector CameraLocation = this->GetPawn()->GetActorLocation();
 	CameraLocation.Z -= 20.f;
+	
+	//TODO set value for min Z coord, so player is unable to ZoomIn below level
+	//Or ZoomIn so close that's it's impossible to locate anything
+	float MapMinZCord = 700.f;
+	if (CameraLocation.Z < MapMinZCord) { return; }
+
 	this->GetPawn()->SetActorLocation(CameraLocation);
 }
 
@@ -197,6 +212,12 @@ void ARTSPlayerController::ZoomOut()
 
 	FVector CameraLocation = this->GetPawn()->GetActorLocation();
 	CameraLocation.Z += 20.f;
+
+	//TODO set value for max Z coord, so player is unable to ZoomOut 
+	//To the values that it's almost impossible to spot anything
+	float MapMaxZCord = 1000.f;
+	if (CameraLocation.Z > 1000.f) { return; }
+
 	this->GetPawn()->SetActorLocation(CameraLocation);
 }
 
@@ -256,6 +277,11 @@ void ARTSPlayerController::LeftMouseButtonActions()
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Ordering units to move towards sewer's entrance"));
 						//TODO add logic + decide if entering sewer by unit should change level
+						//Or just move unit to other level
+
+						//TESTING moving unit to another spot in level atm
+						ASewerEntrance* SewerEntrance = Cast<ASewerEntrance>(Hit.GetActor());
+						Cast<ARTSAIController>(Actor->GetController())->EnterSewer(SewerEntrance);
 					}
 					//Else move to pointed location
 					else

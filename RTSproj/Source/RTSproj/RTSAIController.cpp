@@ -15,6 +15,7 @@
 #include "RTSHud.h"
 #include "Prison.h"
 #include "PlayersHideout.h"
+#include "SewerEntrance.h"
 
 ARTSAIController::ARTSAIController()
 {
@@ -31,6 +32,7 @@ void ARTSAIController::Move(FVector MoveTo)
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterSewerTimerHandle);
 
 	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
 	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
@@ -38,6 +40,8 @@ void ARTSAIController::Move(FVector MoveTo)
 
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MoveTo);
 
+	//TODO decide if we need PerformMove?
+	//We need it for setting boolean to false, anything else?
 	GetWorld()->GetTimerManager().SetTimer(MoveTimerHandle, this, &ARTSAIController::PerformMove, RequiredTime, false);
 }
 
@@ -45,6 +49,51 @@ void ARTSAIController::PerformMove()
 {
 	bUnitBusy = false;
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+}
+
+void ARTSAIController::EnterSewer(ASewerEntrance* SewerEntrance)
+{
+	bUnitBusy = true;
+
+	//Clearing timers of other actions (in case player changed his mind)
+	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterSewerTimerHandle);
+
+	UE_LOG(LogTemp, Warning, TEXT("Entering Sewer"));
+
+	//Unit move to sewer location
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, SewerEntrance->GetActorLocation());
+
+	//Get distance from unit to sewer entrance so we can get required time for method to pop
+	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), SewerEntrance->GetActorLocation());
+	float MaxSpd = this->GetPawn()->GetMovementComponent()->GetMaxSpeed();
+	float RequiredTime = Distance / MaxSpd;
+
+	//Create delegate and give him parameter to carry it over
+	FTimerDelegate PerformDelegate;
+	PerformDelegate.BindUFunction(this, FName("PerformEnterSewer"), SewerEntrance);
+
+	GetWorld()->GetTimerManager().SetTimer(EnterSewerTimerHandle, PerformDelegate, RequiredTime, false);
+}
+
+void ARTSAIController::PerformEnterSewer(ASewerEntrance* SewerEntrance)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s is entering sewer"), *(this->GetPawn()->GetName()));
+	//TODO Move unit to other level (sewer level)
+	//Now just hide unit from player
+	ARTSPlayerUnit* PlayerUnit = Cast<ARTSPlayerUnit>(this->GetPawn());
+
+	PlayerUnit->HealthBarInvisible(true);
+	PlayerUnit->GetMovementComponent()->StopMovementImmediately();
+	PlayerUnit->SetInBuilding(true);
+	PlayerUnit->SetActorHiddenInGame(true);
+	PlayerUnit->SetActorEnableCollision(false);
+
+	bUnitBusy = false;
 }
 
 void ARTSAIController::GetCloserToBuilding(ABuilding* Building, EUnitState UnitState)
@@ -59,6 +108,7 @@ void ARTSAIController::GetCloserToBuilding(ABuilding* Building, EUnitState UnitS
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterSewerTimerHandle);
 
 	FVector MoveTo = Building->GetRootComponent()->GetComponentLocation();
 	float Distance = MyMathClass::GetDistance(this->GetPawn()->GetActorLocation(), MoveTo);
@@ -141,6 +191,7 @@ void ARTSAIController::Knife(FHitResult Hit)
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterSewerTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -193,6 +244,7 @@ void ARTSAIController::FirePistol(FHitResult Hit)
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterSewerTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{
@@ -294,10 +346,11 @@ void ARTSAIController::Aid(FHitResult Hit, EUnitState UnitState)
 
 	//Clearing timers of other actions (in case player changed his mind)
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle); 
+	GetWorld()->GetTimerManager().ClearTimer(GettingCloserTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AidTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MoveTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(EnterBuildingTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(EnterSewerTimerHandle);
 
 	if (Hit.GetActor()->GetClass()->IsChildOf<ARTSCharacter>())
 	{

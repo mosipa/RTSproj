@@ -42,6 +42,8 @@ public:
 
 	void GetCloserToBuilding(class ABuilding* Building, EUnitState UnitState);
 
+	void EnterSewer(class ASewerEntrance* SewerEntrance);
+
 private:
 	bool bUnitBusy;
 
@@ -54,6 +56,7 @@ private:
 	FTimerHandle AidTimerHandle;
 	FTimerHandle MoveTimerHandle;
 	FTimerHandle EnterBuildingTimerHandle;
+	FTimerHandle EnterSewerTimerHandle;
 
 	void PrepareAttack();
 	void PrepareToFire();
@@ -78,6 +81,10 @@ private:
 	UFUNCTION()
 		void PerformReleasePrisoners(class APrison* Prison);
 
+	UFUNCTION()
+		void PerformEnterSewer(class ASewerEntrance* SewerEntrance);
+
+	//TODO check if it's even used?
 	EUnitState InteralUnitState;
 
 	float AidTime;
